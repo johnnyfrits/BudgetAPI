@@ -21,40 +21,40 @@ namespace BudgetAPI.Controllers
             _context = context;
         }
 
-        // GET: api/Cards
+        // GET: api/Card
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CardsDTO>>> GetCards()
+        public async Task<ActionResult<IEnumerable<CardsDTO>>> GetCard()
         {
             return await _context.Cards.Include(u => u.User)
-                                       .Select(c => CardsToDTO(c))
+                                       .Select(c => CardToDTO(c))
                                        .ToListAsync();
         }
 
-        // GET: api/Cards/5
+        // GET: api/Card/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Cards>> GetCards(int id)
+        public async Task<ActionResult<Cards>> GetCard(int id)
         {
-            var cards = await _context.Cards.FindAsync(id);
+            var card = await _context.Cards.FindAsync(id);
 
-            if (cards == null)
+            if (card == null)
             {
                 return NotFound();
             }
 
-            return cards;
+            return card;
         }
 
-        // PUT: api/Cards/5
+        // PUT: api/Card/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCards(int id, Cards cards)
+        public async Task<IActionResult> PutCard(int id, Cards card)
         {
-            if (id != cards.Id)
+            if (id != card.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(cards).State = EntityState.Modified;
+            _context.Entry(card).State = EntityState.Modified;
 
             try
             {
@@ -62,7 +62,7 @@ namespace BudgetAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!CardsExists(id))
+                if (!CardExists(id))
                 {
                     return NotFound();
                 }
@@ -75,45 +75,45 @@ namespace BudgetAPI.Controllers
             return NoContent();
         }
 
-        // POST: api/Cards
+        // POST: api/Card
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Cards>> PostCards(Cards cards)
+        public async Task<ActionResult<Cards>> PostCard(Cards card)
         {
-            _context.Cards.Add(cards);
+            _context.Cards.Add(card);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCards", new { id = cards.Id }, cards);
+            return CreatedAtAction("GetCard", new { id = card.Id }, card);
         }
 
-        // DELETE: api/Cards/5
+        // DELETE: api/Card/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCards(int id)
+        public async Task<IActionResult> DeleteCard(int id)
         {
-            var cards = await _context.Cards.FindAsync(id);
-            if (cards == null)
+            var card = await _context.Cards.FindAsync(id);
+            if (card == null)
             {
                 return NotFound();
             }
 
-            _context.Cards.Remove(cards);
+            _context.Cards.Remove(card);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool CardsExists(int id)
+        private bool CardExists(int id)
         {
             return _context.Cards.Any(e => e.Id == id);
         }
 
-        private static CardsDTO CardsToDTO(Cards cards) => 
+        private static CardsDTO CardToDTO(Cards card) => 
             new CardsDTO {
-                Id     = cards.Id,
-                UserId = cards.UserId,
-                Name   = cards.Name,
-                Color  = cards.Color,
-				User   = UsersController.UsersToDTO(cards.User)
+                Id     = card.Id,
+                UserId = card.UserId,
+                Name   = card.Name,
+                Color  = card.Color,
+				User   = UsersController.UserToDTO(card.User)
             };
 	}
 }

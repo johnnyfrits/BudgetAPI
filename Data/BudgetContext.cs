@@ -9,8 +9,9 @@ namespace BudgetAPI.Data
 		{
 		}
 
-		public DbSet<Users> Users { get; set; }
+		public DbSet<Accounts> Accounts { get; set; }
 		public DbSet<Cards> Cards { get; set; }
+		public DbSet<Users> Users { get; set; }
 
 	}
 }

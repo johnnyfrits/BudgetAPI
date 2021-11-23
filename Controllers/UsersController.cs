@@ -23,36 +23,36 @@ namespace BudgetAPI.Controllers
 
 		// GET: api/Users
 		[HttpGet]
-		public async Task<ActionResult<IEnumerable<Users>>> GetUsers()
+		public async Task<ActionResult<IEnumerable<Users>>> GetUser()
 		{
 			return await _context.Users.ToListAsync();
 		}
 
 		// GET: api/Users/5
 		[HttpGet("{id}")]
-		public async Task<ActionResult<Users>> GetUsers(int id)
+		public async Task<ActionResult<Users>> GetUser(int id)
 		{
-			var users = await _context.Users.FindAsync(id);
+			var user = await _context.Users.FindAsync(id);
 
-			if (users == null)
+			if (user == null)
 			{
 				return NotFound();
 			}
 
-			return users;
+			return user;
 		}
 
 		// PUT: api/Users/5
 		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPut("{id}")]
-		public async Task<IActionResult> PutUsers(int id, Users users)
+		public async Task<IActionResult> PutUsers(int id, Users user)
 		{
-			if (id != users.Id)
+			if (id != user.Id)
 			{
 				return BadRequest();
 			}
 
-			_context.Entry(users).State = EntityState.Modified;
+			_context.Entry(user).State = EntityState.Modified;
 
 			try
 			{
@@ -60,7 +60,7 @@ namespace BudgetAPI.Controllers
 			}
 			catch (DbUpdateConcurrencyException)
 			{
-				if (!UsersExists(id))
+				if (!UserExists(id))
 				{
 					return NotFound();
 				}
@@ -76,39 +76,39 @@ namespace BudgetAPI.Controllers
 		// POST: api/Users
 		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPost]
-		public async Task<ActionResult<Users>> PostUsers(Users users)
+		public async Task<ActionResult<Users>> PostUser(Users user)
 		{
-			_context.Users.Add(users);
+			_context.Users.Add(user);
 			await _context.SaveChangesAsync();
 
-			return CreatedAtAction("GetUsers", new { id = users.Id }, users);
+			return CreatedAtAction("GetUser", new { id = user.Id }, user);
 		}
 
 		// DELETE: api/Users/5
 		[HttpDelete("{id}")]
-		public async Task<IActionResult> DeleteUsers(int id)
+		public async Task<IActionResult> DeleteUser(int id)
 		{
-			var users = await _context.Users.FindAsync(id);
-			if (users == null)
+			var user = await _context.Users.FindAsync(id);
+			if (user == null)
 			{
 				return NotFound();
 			}
 
-			_context.Users.Remove(users);
+			_context.Users.Remove(user);
 			await _context.SaveChangesAsync();
 
 			return NoContent();
 		}
 
-		private bool UsersExists(int id)
+		private bool UserExists(int id)
 		{
 			return _context.Users.Any(e => e.Id == id);
 		}
 
-		public static UsersDTO UsersToDTO(Users user) =>
+		public static UsersDTO UserToDTO(Users user) =>
 			new UsersDTO
 			{
-				Id = user.Id,
+				Id   = user.Id,
 				Name = user.Name
 			};
 	}
