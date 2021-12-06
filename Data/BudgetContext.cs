@@ -7,14 +7,26 @@ namespace BudgetAPI.Data
 	{
 		public BudgetContext(DbContextOptions<BudgetContext> options) : base(options)
 		{
+
 		}
+
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
+		{
+			base.OnModelCreating(modelBuilder);
+
+			modelBuilder.Entity<AccountsDTO>().ToTable("AccountsDTO").HasNoKey();
+
+			modelBuilder.HasDbFunction(typeof(BudgetContext).GetMethod(nameof(GetAccountTotals), new[] { typeof(int), typeof(string) }));
+		}
+
+		public IQueryable<AccountsDTO> GetAccountTotals(int accountId, string reference) => FromExpression(() => GetAccountTotals(accountId, reference));
 
 		public DbSet<Accounts> Accounts { get; set; }
 		public DbSet<Cards> Cards { get; set; }
 		public DbSet<Users> Users { get; set; }
-		public DbSet<BudgetAPI.Models.Yields> Yields { get; set; }
-		public DbSet<BudgetAPI.Models.AccountsPostings> AccountsPostings { get; set; }
-		public DbSet<BudgetAPI.Models.CardsPostings> CardsPostings { get; set; }
+		public DbSet<Yields> Yields { get; set; }
+		public DbSet<AccountsPostings> AccountsPostings { get; set; }
+		public DbSet<CardsPostings> CardsPostings { get; set; }
 
 	}
 }

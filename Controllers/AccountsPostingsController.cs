@@ -42,6 +42,15 @@ namespace BudgetAPI.Controllers
             return accountsPostings;
         }
 
+        
+        [HttpGet("{accountId}/{reference}")]
+        public async Task<ActionResult<IEnumerable<AccountsPostings>>> GetAccountsPostings(int accountId, string reference)
+        {
+            var accountsPostings = await _context.AccountsPostings.Where(o => o.AccountId == accountId && o.Reference == reference).ToListAsync();
+
+            return accountsPostings;
+        }
+
         // PUT: api/AccountsPostings/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
