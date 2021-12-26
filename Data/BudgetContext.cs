@@ -27,6 +27,9 @@ namespace BudgetAPI.Data
 		public DbSet<Yields> Yields { get; set; }
 		public DbSet<AccountsPostings> AccountsPostings { get; set; }
 		public DbSet<CardsPostings> CardsPostings { get; set; }
+		public DbSet<Expenses> Expenses { get; set; }
+		public DbSet<Incomes> Incomes { get; set; }
+		public DbSet<People> People { get; set; }
 
 	}
 }

@@ -109,11 +109,12 @@ namespace BudgetAPI.Controllers
 
 		private static CardsDTO CardToDTO(Cards card) => 
 			new CardsDTO {
-				Id     = card.Id,
-				UserId = card.UserId,
-				Name   = card.Name,
-				Color  = card.Color,
-				User   = UsersController.UserToDTO(card.User)
+				Id         = card.Id,
+				UserId     = card.UserId,
+				Name       = card.Name,
+				Color      = card.Color,
+				Background = card.Background,
+				User       = UsersController.UserToDTO(card.User)
 			};
 	}
 }

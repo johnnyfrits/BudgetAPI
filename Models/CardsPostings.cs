@@ -7,11 +7,13 @@
 		public DateTime Date { get; set; }
 		public string Reference { get; set; }
 		public string Description { get; set; }
+		public string? PeopleId { get; set; }
 		public int? ParcelNumber { get; set; }
 		public int? Parcels { get; set; }
 		public decimal Amount { get; set; }
 		public decimal? TotalAmount { get; set; }
 		public bool Others { get; set; }
 		public string? Note { get; set; }
+		public People? People { get; set; }
 	}
 }
