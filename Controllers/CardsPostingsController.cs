@@ -27,7 +27,7 @@ namespace BudgetAPI.Controllers
 		[HttpGet("{id}")]
 		public async Task<ActionResult<CardsPostings>> GetCardsPostings(int id)
 		{
-			var cardsPostings = await _context.CardsPostings.FindAsync(id);
+			var cardsPostings = await _context.CardsPostings.Include(o => o.People).SingleOrDefaultAsync(c => c.Id == id);
 
 			if (cardsPostings == null)
 			{
@@ -84,9 +84,11 @@ namespace BudgetAPI.Controllers
 		public async Task<ActionResult<CardsPostings>> PostCardsPostings(CardsPostings cardsPostings)
 		{
 			_context.CardsPostings.Add(cardsPostings);
+
 			await _context.SaveChangesAsync();
 
-			return CreatedAtAction("GetCardsPostings", new { id = cardsPostings.Id }, cardsPostings);
+			return await GetCardsPostings(cardsPostings.Id);
+			//return CreatedAtAction("GetCardsPostings", new { id = cardsPostings.Id }, cardsPostings);
 		}
 
 		// DELETE: api/CardsPostings/5
