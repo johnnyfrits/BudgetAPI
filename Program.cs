@@ -5,7 +5,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddDbContext<BudgetContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+int mode = 0;
+
+if (mode == 0)
+{
+	builder.Services.AddDbContext<BudgetContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("AzureConnection")));
+}
+else
+{
+	builder.Services.AddDbContext<BudgetContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("LocalConnection")));
+}
+
 builder.Services.AddControllers();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
