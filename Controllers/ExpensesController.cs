@@ -121,7 +121,9 @@ namespace BudgetAPI.Controllers
 				ToPay       = expense.ToPay,
 				Paid        = expense.Paid,
 				Remaining   = expense.ToPay - expense.Paid,
-				Note        = expense.Note
+				Note        = expense.Note,
+				CardId      = expense.CardId,
+				AccountId   = expense.AccountId
 			};
 	}
 }

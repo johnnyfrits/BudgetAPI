@@ -10,5 +10,7 @@
 		public decimal ToReceive{ get; set; }
 		public decimal Received { get; set; }
 		public string? Note { get; set; }
+		public int? CardId { get; set; }
+		public int? AccountId { get; set; }
 	}
 }

@@ -11,5 +11,7 @@
 		public decimal Paid { get; set; }
 		public decimal Remaining { get; set; }
 		public string? Note { get; set; }
+		public int? CardId { get; set; }
+		public int? AccountId { get; set; }
 	}
 }
