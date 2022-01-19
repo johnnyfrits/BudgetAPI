@@ -47,6 +47,12 @@ namespace BudgetAPI.Controllers
 			return cardsPostings;
 		}
 
+		[HttpGet("People")]
+		public async Task<ActionResult<IEnumerable<CardsPostingsPeople>>> GetCardsPostingsPeople(int cardId, string reference)
+		{
+			return await _context.GetCardsPostingsPeople(cardId, reference).ToListAsync();
+		}
+
 		// PUT: api/CardsPostings/5
 		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPut("{id}")]

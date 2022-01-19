@@ -28,8 +28,6 @@ namespace BudgetAPI.Controllers
 			return await _context.Accounts.ToListAsync();
 		}
 
-		// GET: api/Accounts/Totals
-		//[HttpGet("{account}/{reference}")]
 		[HttpGet("Totals")]
 		public async Task<ActionResult<AccountsDTO>> GetAccountTotals(int account, string reference)
 		{
@@ -43,10 +41,26 @@ namespace BudgetAPI.Controllers
 
 			return accountDto;
 		}
-		//public string GetAccountTotals(int account, string reference)
-		//{
-		//    return $"Conta:{account} | Referencia: {reference}";
-		//}
+
+		[HttpGet("AccountsSummary")]
+		public async Task<ActionResult<IEnumerable<AccountsSummary>>> GetAccountsSummary(string reference)
+		{
+			return await _context.GetAccountsSummary(reference).ToListAsync();
+		}
+
+		[HttpGet("SummaryTotals")]
+		public async Task<ActionResult<AccountsSummaryTotals>> GetAccountsSummaryTotals(string reference)
+		{
+			var accountsSummaryTotals = new AccountsSummaryTotals();
+
+			try
+			{
+				accountsSummaryTotals = await _context.GetTotalsAccountsSummary(reference).FirstAsync();
+			}
+			catch { /**/ }
+
+			return accountsSummaryTotals;
+		}
 
 		// GET: api/Accounts/5
 		[HttpGet("{id}")]

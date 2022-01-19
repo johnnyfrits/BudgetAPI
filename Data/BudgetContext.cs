@@ -15,11 +15,20 @@ namespace BudgetAPI.Data
 			base.OnModelCreating(modelBuilder);
 
 			modelBuilder.Entity<AccountsDTO>().ToTable("AccountsDTO").HasNoKey();
+			modelBuilder.Entity<AccountsSummary>().ToTable("AccountsSummary").HasNoKey();
+			modelBuilder.Entity<AccountsSummaryTotals>().ToTable("AccountsSummaryTotals").HasNoKey();
+			modelBuilder.Entity<CardsPostingsPeople>().ToTable("CardsPostingsPeople").HasNoKey();
 
 			modelBuilder.HasDbFunction(typeof(BudgetContext).GetMethod(nameof(GetAccountTotals), new[] { typeof(int), typeof(string) }));
+			modelBuilder.HasDbFunction(typeof(BudgetContext).GetMethod(nameof(GetAccountsSummary), new[] { typeof(string) }));
+			modelBuilder.HasDbFunction(typeof(BudgetContext).GetMethod(nameof(GetTotalsAccountsSummary), new[] { typeof(string) }));
+			modelBuilder.HasDbFunction(typeof(BudgetContext).GetMethod(nameof(GetCardsPostingsPeople), new[] { typeof(int), typeof(string) }));
 		}
 
 		public IQueryable<AccountsDTO> GetAccountTotals(int accountId, string reference) => FromExpression(() => GetAccountTotals(accountId, reference));
+		public IQueryable<AccountsSummary> GetAccountsSummary(string reference) => FromExpression(() => GetAccountsSummary(reference));
+		public IQueryable<AccountsSummaryTotals> GetTotalsAccountsSummary(string reference) => FromExpression(() => GetTotalsAccountsSummary(reference));
+		public IQueryable<CardsPostingsPeople> GetCardsPostingsPeople(int cardId, string reference) => FromExpression(() => GetCardsPostingsPeople(cardId, reference));
 
 		public DbSet<Accounts> Accounts { get; set; }
 		public DbSet<Cards> Cards { get; set; }

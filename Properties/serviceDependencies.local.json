@@ -3,16 +3,16 @@
     "secrets1": {
       "type": "secrets.user"
     },
+    "mssql2": {
+      "secretStore": "LocalSecretsFile",
+      "type": "mssql.onprem",
+      "connectionId": "ConnectionStrings:LocalConnection"
+    },
     "mssql1": {
       "secretStore": "LocalSecretsFile",
       "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/jk7server/databases/Budget",
       "type": "mssql.azure",
       "connectionId": "ConnectionStrings:AzureConnection"
-    },
-    "mssql2": {
-      "secretStore": "LocalSecretsFile",
-      "type": "mssql.onprem",
-      "connectionId": "ConnectionStrings:LocalConnection"
     }
   }
 }
