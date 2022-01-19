@@ -89,6 +89,20 @@ namespace BudgetAPI.Controllers
 			return CreatedAtAction("GetAccountsPostings", new { id = accountsPostings.Id }, accountsPostings);
 		}
 
+		[HttpPut("SetPositions")]
+		public async Task<ActionResult<AccountsPostings>> SetPositions(List<AccountsPostings> accountsPostings)
+		{
+			foreach (AccountsPostings accountPosting in accountsPostings)
+			{
+				_context.Entry(accountPosting).State = EntityState.Modified;
+			}
+
+			await _context.SaveChangesAsync();
+
+			return Ok();
+		}
+
+
 		// DELETE: api/AccountsPostings/5
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteAccountsPostings(int id)

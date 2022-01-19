@@ -79,6 +79,19 @@ namespace BudgetAPI.Controllers
 			return NoContent();
 		}
 
+		[HttpPut("SetPositions")]
+		public async Task<ActionResult<Incomes>> SetPositions(List<Incomes> incomes)
+		{
+			foreach (Incomes income in incomes)
+			{
+				_context.Entry(income).State = EntityState.Modified;
+			}
+
+			await _context.SaveChangesAsync();
+
+			return Ok();
+		}
+
 		// POST: api/Incomes
 		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPost]
