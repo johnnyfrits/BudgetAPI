@@ -20,7 +20,7 @@ namespace BudgetAPI.Controllers
 		[HttpGet]
 		public async Task<ActionResult<IEnumerable<AccountsPostings>>> GetAccountsPostings()
 		{
-			return await _context.AccountsPostings.ToListAsync();
+			return await _context.AccountsPostings.OrderBy(o => o.Position).ToListAsync();
 		}
 
 		// GET: api/AccountsPostings/5
@@ -40,7 +40,9 @@ namespace BudgetAPI.Controllers
 		[HttpGet("{accountId}/{reference}")]
 		public async Task<ActionResult<IEnumerable<AccountsPostings>>> GetAccountsPostings(int accountId, string reference)
 		{
-			var accountsPostings = await _context.AccountsPostings.Where(o => o.AccountId == accountId && o.Reference == reference).ToListAsync();
+			var accountsPostings = await _context.AccountsPostings.Where(o => o.AccountId == accountId && o.Reference == reference)
+																  .OrderBy(o => o.Position)
+																  .ToListAsync();
 
 			return accountsPostings;
 		}

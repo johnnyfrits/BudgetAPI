@@ -20,7 +20,7 @@ namespace BudgetAPI.Controllers
 		[HttpGet]
 		public async Task<ActionResult<IEnumerable<CardsPostings>>> GetCardsPostings()
 		{
-			return await _context.CardsPostings.ToListAsync();
+			return await _context.CardsPostings.OrderBy(o => o.Position).ToListAsync();
 		}
 
 		// GET: api/CardsPostings/5
@@ -41,6 +41,7 @@ namespace BudgetAPI.Controllers
 		public async Task<ActionResult<IEnumerable<CardsPostings>>> GetCardsPostings(int cardId, string reference)
 		{
 			var cardsPostings = await _context.CardsPostings.Include(o => o.People)
+															.OrderBy(o => o.Position)
 															.Where(o => o.CardId == cardId && o.Reference == reference)
 															.ToListAsync();
 

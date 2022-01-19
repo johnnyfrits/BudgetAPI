@@ -20,7 +20,7 @@ namespace BudgetAPI.Controllers
 		[HttpGet]
 		public async Task<ActionResult<IEnumerable<Expenses>>> GetExpenses()
 		{
-			return await _context.Expenses.ToListAsync();
+			return await _context.Expenses.OrderBy(e => e.Position).ToListAsync();
 		}
 
 		// GET: api/Expenses/5
@@ -41,8 +41,9 @@ namespace BudgetAPI.Controllers
 		public async Task<ActionResult<IEnumerable<ExpensesDTO>>> GetExpensesByReference(string reference)
 		{
 			var expenses = await _context.Expenses.Where(o => o.Reference == reference)
-												.Select(o => ExpensesToDTO(o))
-												.ToListAsync();
+												  .OrderBy(o => o.Position)
+												  .Select(o => ExpensesToDTO(o))
+												  .ToListAsync();
 
 			return expenses;
 		}
@@ -77,6 +78,7 @@ namespace BudgetAPI.Controllers
 
 			return NoContent();
 		}
+
 
 		// POST: api/Expenses
 		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -113,17 +115,17 @@ namespace BudgetAPI.Controllers
 		private static ExpensesDTO ExpensesToDTO(Expenses expense) =>
 			new ExpensesDTO
 			{
-				Id          = expense.Id,
-				UserId      = expense.UserId,
-				Reference   = expense.Reference,
-				Position    = expense.Position,
+				Id = expense.Id,
+				UserId = expense.UserId,
+				Reference = expense.Reference,
+				Position = expense.Position,
 				Description = expense.Description,
-				ToPay       = expense.ToPay,
-				Paid        = expense.Paid,
-				Remaining   = expense.ToPay - expense.Paid,
-				Note        = expense.Note,
-				CardId      = expense.CardId,
-				AccountId   = expense.AccountId
+				ToPay = expense.ToPay,
+				Paid = expense.Paid,
+				Remaining = expense.ToPay - expense.Paid,
+				Note = expense.Note,
+				CardId = expense.CardId,
+				AccountId = expense.AccountId
 			};
 	}
 }
