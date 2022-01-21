@@ -13,5 +13,7 @@
 		public string? Note { get; set; }
 		public int? CardId { get; set; }
 		public int? AccountId { get; set; }
+		public string? Type { get; set; }
+
 	}
 }

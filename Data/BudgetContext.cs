@@ -38,6 +38,7 @@ namespace BudgetAPI.Data
 		public DbSet<Expenses> Expenses { get; set; }
 		public DbSet<Incomes> Incomes { get; set; }
 		public DbSet<People> People { get; set; }
+		public DbSet<BudgetAPI.Models.CardsReceipts> CardsReceipts { get; set; }
 
 	}
 }

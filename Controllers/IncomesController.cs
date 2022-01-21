@@ -137,7 +137,8 @@ namespace BudgetAPI.Controllers
 				Remaining   = income.ToReceive - income.Received,
 				Note        = income.Note,
 				CardId      = income.CardId,
-				AccountId   = income.AccountId
+				AccountId   = income.AccountId,
+				Type        = income.Type
 			};
 	}
 }

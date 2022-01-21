@@ -11,5 +11,8 @@
 		public decimal Amount { get; set; }
 		public string? Note { get; set; }
 		public string? Type { get; set; }
+		public int? CardReceiptId { get; set; }
+		public int? ExpenseId { get; set; }
+		public int? IncomeId { get; set; }
 	}
 }

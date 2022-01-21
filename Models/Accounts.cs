@@ -10,5 +10,6 @@ namespace BudgetAPI.Models
 		public string Name { get; set; }
 		public string? Color { get; set; }
 		public string? Background { get; set; }
+		public bool? CalcInGeneral { get; set; }
 	}
 }

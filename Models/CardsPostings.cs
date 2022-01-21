@@ -6,9 +6,9 @@
 		public int CardId { get; set; }
 		public DateTime Date { get; set; }
 		public string Reference { get; set; }
+		public string? PeopleId { get; set; }
 		public short? Position { get; set; }
 		public string Description { get; set; }
-		public string? PeopleId { get; set; }
 		public int? ParcelNumber { get; set; }
 		public int? Parcels { get; set; }
 		public decimal Amount { get; set; }

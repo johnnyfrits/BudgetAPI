@@ -5,7 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-int mode = 1;
+int mode = 0;
 
 if (mode == 0)
 {
