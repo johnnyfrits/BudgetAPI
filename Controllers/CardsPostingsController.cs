@@ -122,6 +122,67 @@ namespace BudgetAPI.Controllers
 			//return CreatedAtAction("GetCardsPostings", new { id = cardsPostings.Id }, cardsPostings);
 		}
 
+		[HttpPost("AllParcels")]
+		public async Task<ActionResult<CardsPostings>> PostCardsPostingsWithParcels(CardsPostings cardsPostings)
+		{
+			var reference    = cardsPostings.Reference;
+			var position     = cardsPostings.Position;
+			var totalAmount  = cardsPostings.TotalAmount ?? 0;
+			var parcels      = 1 + (cardsPostings.Parcels ?? 1) - (cardsPostings.ParcelNumber ?? 1);
+			var amountParcel = Math.Round(totalAmount / parcels, 2, MidpointRounding.AwayFromZero);
+			amountParcel    += (totalAmount - (amountParcel * parcels));
+
+			for (int? i = cardsPostings.ParcelNumber; i <= cardsPostings.Parcels; i++)
+			{
+				var cp = new CardsPostings
+				{
+					CardId       = cardsPostings.CardId,
+					Date         = cardsPostings.Date,
+					Reference    = reference,
+					PeopleId     = cardsPostings.PeopleId,
+					Position     = position++,
+					Description  = cardsPostings.Description,
+					ParcelNumber = i,
+					Parcels      = cardsPostings.Parcels,
+					Amount       = amountParcel,
+					TotalAmount  = cardsPostings.TotalAmount,
+					Others       = cardsPostings.Others,
+					Note         = cardsPostings.Note,
+				};
+
+				totalAmount   = totalAmount > cp.Amount ? totalAmount - cp.Amount : totalAmount;
+				parcels -= parcels > 1 ? 1 : 0;
+				amountParcel  = Math.Round(totalAmount / parcels, 2, MidpointRounding.AwayFromZero);
+				amountParcel += (totalAmount - (amountParcel * parcels));
+
+				_context.CardsPostings.Add(cp);
+
+				await _context.SaveChangesAsync();
+
+				if (i == cardsPostings.ParcelNumber) // The first parcel
+				{
+					cardsPostings.Id     = cp.Id;
+					cardsPostings.Amount = cp.Amount;
+				}
+
+				reference = GetNewReference(reference);
+			}
+
+			return await GetCardsPostings(cardsPostings.Id);
+		}
+
+		private string GetNewReference(string reference)
+		{
+			var year  = int.Parse(reference.Substring(0, 4));
+			var month = int.Parse(reference.Substring(4, 2));
+
+			var date = new DateTime(year, month, 1).AddMonths(1);
+
+			var newReference = date.ToString("yyyyMM");
+
+			return newReference;
+		}
+
 		// DELETE: api/CardsPostings/5
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteCardsPostings(int id)
