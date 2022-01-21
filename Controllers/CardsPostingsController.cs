@@ -48,6 +48,17 @@ namespace BudgetAPI.Controllers
 			return cardsPostings;
 		}
 
+		[HttpGet("People/{peopleId}/{reference}")]
+		public async Task<ActionResult<IEnumerable<CardsPostings>>> GetCardsPostings(string peopleId, string reference)
+		{
+			var cardsPostings = await _context.CardsPostings.Include(o => o.People)
+															.OrderBy(o => o.Position)
+															.Where(o => o.PeopleId == peopleId && o.Reference == reference)
+															.ToListAsync();
+
+			return cardsPostings;
+		}
+
 		[HttpGet("People")]
 		public async Task<ActionResult<IEnumerable<CardsPostingsPeople>>> GetCardsPostingsPeople(int cardId, string reference)
 		{
