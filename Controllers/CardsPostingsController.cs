@@ -109,6 +109,42 @@ namespace BudgetAPI.Controllers
 			return Ok();
 		}
 
+		[HttpPut("AllParcels/{id}")]
+		public async Task<ActionResult<CardsPostings>> PutCardsPostingsWithParcels(int id, CardsPostings cardsPostings)
+		{
+			using (var transaction = _context.Database.BeginTransaction())
+			{
+				try
+				{
+					if (id != cardsPostings.Id)
+					{
+						return BadRequest();
+					}
+
+					_context.Entry(cardsPostings).State = EntityState.Modified;
+
+					var cardsPostingsList = GenerateCardsPostings(cardsPostings);
+
+					foreach (CardsPostings cp in cardsPostingsList.Skip(1))
+					{
+						_context.CardsPostings.Add(cp);
+					}
+
+					await _context.SaveChangesAsync();
+
+					transaction.Commit();
+
+					return Ok();
+				}
+				catch (Exception ex)
+				{
+					transaction.Rollback();
+
+					return Problem(ex.Message);
+				}
+			}
+		}
+
 		// POST: api/CardsPostings
 		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPost]
@@ -125,62 +161,39 @@ namespace BudgetAPI.Controllers
 		[HttpPost("AllParcels")]
 		public async Task<ActionResult<CardsPostings>> PostCardsPostingsWithParcels(CardsPostings cardsPostings)
 		{
-			var reference    = cardsPostings.Reference;
-			var position     = cardsPostings.Position;
-			var totalAmount  = cardsPostings.TotalAmount ?? 0;
-			var parcels      = 1 + (cardsPostings.Parcels ?? 1) - (cardsPostings.ParcelNumber ?? 1);
-			var amountParcel = Math.Round(totalAmount / parcels, 2, MidpointRounding.AwayFromZero);
-			amountParcel    += (totalAmount - (amountParcel * parcels));
-
-			for (int? i = cardsPostings.ParcelNumber; i <= cardsPostings.Parcels; i++)
+			using (var transaction = _context.Database.BeginTransaction())
 			{
-				var cp = new CardsPostings
+				try
 				{
-					CardId       = cardsPostings.CardId,
-					Date         = cardsPostings.Date,
-					Reference    = reference,
-					PeopleId     = cardsPostings.PeopleId,
-					Position     = position++,
-					Description  = cardsPostings.Description,
-					ParcelNumber = i,
-					Parcels      = cardsPostings.Parcels,
-					Amount       = amountParcel,
-					TotalAmount  = cardsPostings.TotalAmount,
-					Others       = cardsPostings.Others,
-					Note         = cardsPostings.Note,
-				};
+					var cardsPostingsList = GenerateCardsPostings(cardsPostings);
 
-				totalAmount   = totalAmount > cp.Amount ? totalAmount - cp.Amount : totalAmount;
-				parcels -= parcels > 1 ? 1 : 0;
-				amountParcel  = Math.Round(totalAmount / parcels, 2, MidpointRounding.AwayFromZero);
-				amountParcel += (totalAmount - (amountParcel * parcels));
+					var i = 1;
 
-				_context.CardsPostings.Add(cp);
+					foreach (CardsPostings cp in cardsPostingsList)
+					{
+						_context.CardsPostings.Add(cp);
 
-				await _context.SaveChangesAsync();
+						await _context.SaveChangesAsync();
 
-				if (i == cardsPostings.ParcelNumber) // The first parcel
-				{
-					cardsPostings.Id     = cp.Id;
-					cardsPostings.Amount = cp.Amount;
+						if (i++ == 1)
+						{
+							cardsPostings.Id     = cp.Id;
+							cardsPostings.Amount = cp.Amount;
+						}
+					}
+
+					transaction.Commit();
+
+					return await GetCardsPostings(cardsPostings.Id);
+
 				}
+				catch (Exception ex)
+				{
+					transaction.Rollback();
 
-				reference = GetNewReference(reference);
+					return Problem(ex.Message);
+				}
 			}
-
-			return await GetCardsPostings(cardsPostings.Id);
-		}
-
-		private string GetNewReference(string reference)
-		{
-			var year  = int.Parse(reference.Substring(0, 4));
-			var month = int.Parse(reference.Substring(4, 2));
-
-			var date = new DateTime(year, month, 1).AddMonths(1);
-
-			var newReference = date.ToString("yyyyMM");
-
-			return newReference;
 		}
 
 		// DELETE: api/CardsPostings/5
@@ -202,6 +215,64 @@ namespace BudgetAPI.Controllers
 		private bool CardsPostingsExists(int id)
 		{
 			return _context.CardsPostings.Any(e => e.Id == id);
+		}
+
+		private static string GetNewReference(string reference)
+		{
+			var year  = int.Parse(reference.Substring(0, 4));
+			var month = int.Parse(reference.Substring(4, 2));
+
+			var date = new DateTime(year, month, 1).AddMonths(1);
+
+			var newReference = date.ToString("yyyyMM");
+
+			return newReference;
+		}
+
+		private static List<CardsPostings> GenerateCardsPostings(CardsPostings cardPosting)
+		{
+			var cardsPostingsList = new List<CardsPostings>();
+
+			var reference    = cardPosting.Reference;
+			var position     = cardPosting.Position;
+			var totalAmount  = cardPosting.TotalAmount ?? 0;
+			var parcels      = cardPosting.Parcels ?? 1;
+			var amountParcel = Math.Round(totalAmount / parcels, 2, MidpointRounding.AwayFromZero);
+			amountParcel    += (totalAmount - (amountParcel * parcels));
+
+			for (int? i = 1; i <= cardPosting.Parcels; i++)
+			{
+				if (i >= cardPosting.ParcelNumber)
+				{
+					var cp = new CardsPostings
+					{
+						CardId       = cardPosting.CardId,
+						Date         = cardPosting.Date,
+						Reference    = reference,
+						PeopleId     = cardPosting.PeopleId,
+						Position     = position++,
+						Description  = cardPosting.Description,
+						ParcelNumber = i,
+						Parcels      = cardPosting.Parcels,
+						Amount       = amountParcel,
+						TotalAmount  = cardPosting.TotalAmount,
+						Others       = cardPosting.Others,
+						Note         = cardPosting.Note,
+					};
+
+					cardsPostingsList.Add(cp);
+
+					reference = GetNewReference(reference);
+				}
+
+				parcels -= parcels > 1 ? 1 : 0;
+
+				totalAmount   = totalAmount > amountParcel ? totalAmount - amountParcel : totalAmount;
+				amountParcel  = Math.Round(totalAmount / parcels, 2, MidpointRounding.AwayFromZero);
+				amountParcel += (totalAmount - (amountParcel * parcels));
+			}
+
+			return cardsPostingsList;
 		}
 	}
 }

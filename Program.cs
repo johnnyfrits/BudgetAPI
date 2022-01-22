@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using BudgetAPI.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -5,7 +6,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-int mode = 0;
+int mode = 1;
+
+if (Debugger.IsAttached)
+{
+	mode = 1;
+}
 
 if (mode == 0)
 {
