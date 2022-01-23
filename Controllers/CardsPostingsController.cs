@@ -112,7 +112,7 @@ namespace BudgetAPI.Controllers
 		[HttpPut("AllParcels/{id}")]
 		public async Task<ActionResult<CardsPostings>> PutCardsPostingsWithParcels(int id, CardsPostings cardsPostings)
 		{
-			using (var transaction = _context.Database.BeginTransaction())
+			//using (var transaction = _context.Database.BeginTransaction())
 			{
 				try
 				{
@@ -128,17 +128,17 @@ namespace BudgetAPI.Controllers
 					foreach (CardsPostings cp in cardsPostingsList.Skip(1))
 					{
 						_context.CardsPostings.Add(cp);
+
+						await _context.SaveChangesAsync();
 					}
 
-					await _context.SaveChangesAsync();
-
-					transaction.Commit();
+					//transaction.Commit();
 
 					return Ok();
 				}
 				catch (Exception ex)
 				{
-					transaction.Rollback();
+					//transaction.Rollback();
 
 					return Problem(ex.Message);
 				}
@@ -161,7 +161,7 @@ namespace BudgetAPI.Controllers
 		[HttpPost("AllParcels")]
 		public async Task<ActionResult<CardsPostings>> PostCardsPostingsWithParcels(CardsPostings cardsPostings)
 		{
-			using (var transaction = _context.Database.BeginTransaction())
+			//using (var transaction = _context.Database.BeginTransaction())
 			{
 				try
 				{
@@ -182,14 +182,14 @@ namespace BudgetAPI.Controllers
 						}
 					}
 
-					transaction.Commit();
+					//transaction.Commit();
 
 					return await GetCardsPostings(cardsPostings.Id);
 
 				}
 				catch (Exception ex)
 				{
-					transaction.Rollback();
+					//transaction.Rollback();
 
 					return Problem(ex.Message);
 				}
