@@ -12,6 +12,10 @@
 		public string? Note { get; set; }
 		public int? CardId { get; set; }
 		public int? AccountId { get; set; }
+		public DateTime? DueDate { get; set; }
+		public int? ParcelNumber { get; set; }
+		public int? Parcels { get; set; }
+		public decimal TotalToPay { get; set; }
 
 	}
 }

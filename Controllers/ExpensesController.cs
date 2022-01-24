@@ -128,17 +128,21 @@ namespace BudgetAPI.Controllers
 		private static ExpensesDTO ExpensesToDTO(Expenses expense) =>
 			new ExpensesDTO
 			{
-				Id = expense.Id,
-				UserId = expense.UserId,
-				Reference = expense.Reference,
-				Position = expense.Position,
-				Description = expense.Description,
-				ToPay = expense.ToPay,
-				Paid = expense.Paid,
-				Remaining = expense.ToPay - expense.Paid,
-				Note = expense.Note,
-				CardId = expense.CardId,
-				AccountId = expense.AccountId
+				Id           = expense.Id,
+				UserId       = expense.UserId,
+				Reference    = expense.Reference,
+				Position     = expense.Position,
+				Description  = expense.Description,
+				ToPay        = expense.ToPay,
+				Paid         = expense.Paid,
+				Remaining    = expense.ToPay - expense.Paid,
+				Note         = expense.Note,
+				CardId       = expense.CardId,
+				AccountId    = expense.AccountId,
+				DueDate      = expense.DueDate,
+				ParcelNumber = expense.ParcelNumber,
+				Parcels      = expense.Parcels,
+				TotalToPay   = expense.TotalToPay
 			};
 	}
 }
