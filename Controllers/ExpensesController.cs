@@ -79,6 +79,44 @@ namespace BudgetAPI.Controllers
 			return NoContent();
 		}
 
+		[HttpPut("AllParcels/{id}")]
+		public async Task<ActionResult<Expenses>> PutExpensesWithParcels(int id, Expenses expenses, bool repeat, int qtyMonths)
+		{
+			//using (var transaction = _context.Database.BeginTransaction())
+			{
+				try
+				{
+					if (id != expenses.Id)
+					{
+						return BadRequest();
+					}
+
+					_context.Entry(expenses).State = EntityState.Modified;
+
+					var expensesList = repeat ?
+									   RepeatExpenses(expenses, qtyMonths) :
+									   GenerateExpenses(expenses);
+
+					foreach (Expenses cp in expensesList.Skip(1))
+					{
+						_context.Expenses.Add(cp);
+
+						await _context.SaveChangesAsync();
+					}
+
+					//transaction.Commit();
+
+					return Ok();
+				}
+				catch (Exception ex)
+				{
+					//transaction.Rollback();
+
+					return Problem(ex.Message);
+				}
+			}
+		}
+
 		[HttpPut("SetPositions")]
 		public async Task<ActionResult<Expenses>> SetPositions(List<Expenses> expenses)
 		{
@@ -102,6 +140,46 @@ namespace BudgetAPI.Controllers
 			await _context.SaveChangesAsync();
 
 			return CreatedAtAction("GetExpenses", new { id = expenses.Id }, expenses);
+		}
+
+		[HttpPost("AllParcels")]
+		public async Task<ActionResult<Expenses>> PostExpensesWithParcels(Expenses expenses, bool repeat, int qtyMonths)
+		{
+			//using (var transaction = _context.Database.BeginTransaction())
+			{
+				try
+				{
+					var expensesList = repeat ?
+									   RepeatExpenses(expenses, qtyMonths) :
+									   GenerateExpenses(expenses);
+
+					var i = 1;
+
+					foreach (Expenses cp in expensesList)
+					{
+						_context.Expenses.Add(cp);
+
+						await _context.SaveChangesAsync();
+
+						if (i++ == 1)
+						{
+							expenses.Id    = cp.Id;
+							expenses.ToPay = cp.ToPay;
+						}
+					}
+
+					//transaction.Commit();
+
+					return await GetExpenses(expenses.Id);
+
+				}
+				catch (Exception ex)
+				{
+					//transaction.Rollback();
+
+					return Problem(ex.Message);
+				}
+			}
 		}
 
 		// DELETE: api/Expenses/5
@@ -144,5 +222,110 @@ namespace BudgetAPI.Controllers
 				Parcels      = expense.Parcels,
 				TotalToPay   = expense.TotalToPay
 			};
+
+		private static string GetNewReference(string reference)
+		{
+			var year  = int.Parse(reference.Substring(0, 4));
+			var month = int.Parse(reference.Substring(4, 2));
+
+			var date = new DateTime(year, month, 1).AddMonths(1);
+
+			var newReference = date.ToString("yyyyMM");
+
+			return newReference;
+		}
+
+		private short GetNewPosition(string reference)
+		{
+			var newPosition = _context.Expenses.Where(e => e.Reference == reference).Max(e => e.Position) ?? 0;
+
+			return ++newPosition;
+		}
+
+		private List<Expenses> GenerateExpenses(Expenses expense)
+		{
+			var expensesList = new List<Expenses>();
+
+			var reference  = expense.Reference;
+			var dueDate    = expense.DueDate;
+			var totalToPay = expense.TotalToPay;
+			var parcels    = expense.Parcels ?? 1;
+			var toPay      = Math.Round(totalToPay / parcels, 2, MidpointRounding.AwayFromZero);
+			toPay         += (totalToPay - (toPay * parcels));
+
+			for (int? i = 1; i <= expense.Parcels; i++)
+			{
+				if (i >= expense.ParcelNumber)
+				{
+					var e = new Expenses
+					{
+						UserId       = expense.UserId,
+						Reference    = reference,
+						Position     = expense.Id > 0 && i == expense.ParcelNumber ? expense.Position : GetNewPosition(reference),
+						Description  = expense.Description,
+						ToPay        = toPay,
+						Paid         = expense.Paid,
+						Note         = expense.Note,
+						CardId       = expense.CardId,
+						AccountId    = expense.AccountId,
+						DueDate      = dueDate,
+						ParcelNumber = i,
+						Parcels      = expense.Parcels,
+						TotalToPay   = expense.TotalToPay
+					};
+
+					expensesList.Add(e);
+
+					reference = GetNewReference(reference);
+					dueDate   = dueDate?.AddMonths(1);
+				}
+
+				parcels -= parcels > 1 ? 1 : 0;
+
+				totalToPay = totalToPay > toPay ? totalToPay - toPay : totalToPay;
+				toPay      = Math.Round(totalToPay / parcels, 2, MidpointRounding.AwayFromZero);
+				toPay     += (totalToPay - (toPay * parcels));
+			}
+
+			return expensesList;
+		}
+
+		private List<Expenses> RepeatExpenses(Expenses expense, int qtyMonths)
+		{
+			var expensesList = new List<Expenses>();
+
+			var reference = expense.Reference;
+			var dueDate   = expense.DueDate;
+
+			for (int i = 1; i <= (qtyMonths + 1); i++)
+			{
+				if (i >= expense.ParcelNumber)
+				{
+					var e = new Expenses
+					{
+						UserId       = expense.UserId,
+						Reference    = reference,
+						Position     = expense.Id > 0 && i == expense.ParcelNumber ? expense.Position : GetNewPosition(reference),
+						Description  = expense.Description,
+						ToPay        = expense.ToPay,
+						Paid         = expense.Paid,
+						Note         = expense.Note,
+						CardId       = expense.CardId,
+						AccountId    = expense.AccountId,
+						DueDate      = dueDate,
+						ParcelNumber = expense.ParcelNumber,
+						Parcels      = expense.Parcels,
+						TotalToPay   = expense.TotalToPay
+					};
+
+					expensesList.Add(e);
+
+					reference = GetNewReference(reference);
+					dueDate   = dueDate?.AddMonths(1);
+				}
+			}
+
+			return expensesList;
+		}
 	}
 }

@@ -79,6 +79,42 @@ namespace BudgetAPI.Controllers
 			return NoContent();
 		}
 
+		[HttpPut("Repeat/{id}")]
+		public async Task<ActionResult<Incomes>> PutIncomesWithParcels(int id, Incomes incomes, int qtyMonths)
+		{
+			//using (var transaction = _context.Database.BeginTransaction())
+			{
+				try
+				{
+					if (id != incomes.Id)
+					{
+						return BadRequest();
+					}
+
+					_context.Entry(incomes).State = EntityState.Modified;
+
+					var incomesList = RepeatIncomes(incomes, qtyMonths);
+
+					foreach (Incomes cp in incomesList.Skip(1))
+					{
+						_context.Incomes.Add(cp);
+
+						await _context.SaveChangesAsync();
+					}
+
+					//transaction.Commit();
+
+					return Ok();
+				}
+				catch (Exception ex)
+				{
+					//transaction.Rollback();
+
+					return Problem(ex.Message);
+				}
+			}
+		}
+
 		[HttpPut("SetPositions")]
 		public async Task<ActionResult<Incomes>> SetPositions(List<Incomes> incomes)
 		{
@@ -101,6 +137,43 @@ namespace BudgetAPI.Controllers
 			await _context.SaveChangesAsync();
 
 			return CreatedAtAction("GetIncomes", new { id = incomes.Id }, incomes);
+		}
+
+		[HttpPost("Repeat")]
+		public async Task<ActionResult<Incomes>> PostIncomesWithParcels(Incomes incomes, int qtyMonths)
+		{
+			//using (var transaction = _context.Database.BeginTransaction())
+			{
+				try
+				{
+					var incomesList = RepeatIncomes(incomes, qtyMonths);
+
+					var i = 1;
+
+					foreach (Incomes cp in incomesList)
+					{
+						_context.Incomes.Add(cp);
+
+						await _context.SaveChangesAsync();
+
+						if (i++ == 1)
+						{
+							incomes.Id = cp.Id;
+						}
+					}
+
+					//transaction.Commit();
+
+					return await GetIncomes(incomes.Id);
+
+				}
+				catch (Exception ex)
+				{
+					//transaction.Rollback();
+
+					return Problem(ex.Message);
+				}
+			}
 		}
 
 		// DELETE: api/Incomes/5
@@ -140,5 +213,54 @@ namespace BudgetAPI.Controllers
 				AccountId   = income.AccountId,
 				Type        = income.Type
 			};
+
+		private static string GetNewReference(string reference)
+		{
+			var year  = int.Parse(reference.Substring(0, 4));
+			var month = int.Parse(reference.Substring(4, 2));
+
+			var date = new DateTime(year, month, 1).AddMonths(1);
+
+			var newReference = date.ToString("yyyyMM");
+
+			return newReference;
+		}
+
+		private short GetNewPosition(string reference)
+		{
+			var newPosition = _context.Incomes.Where(e => e.Reference == reference).Max(e => e.Position) ?? 0;
+
+			return ++newPosition;
+		}
+
+		private List<Incomes> RepeatIncomes(Incomes income, int qtyMonths)
+		{
+			var incomesList = new List<Incomes>();
+
+			var reference = income.Reference;
+
+			for (int i = 1; i <= (qtyMonths + 1); i++)
+			{
+				var e = new Incomes
+				{
+					UserId       = income.UserId,
+					Reference    = reference,
+					Position     = income.Id > 0 && i == 1 ? income.Position : GetNewPosition(reference),
+					Description  = income.Description,
+					ToReceive    = income.ToReceive,
+					Received     = income.Received,
+					Note         = income.Note,
+					CardId       = income.CardId,
+					AccountId    = income.AccountId,
+					Type         = income.Type
+				};
+
+				incomesList.Add(e);
+
+				reference = GetNewReference(reference);
+			}
+
+			return incomesList;
+		}
 	}
 }
