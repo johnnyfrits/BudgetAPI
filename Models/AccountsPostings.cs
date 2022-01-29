@@ -12,7 +12,7 @@
 		public string? Note { get; set; }
 		public string? Type { get; set; }
 		public int? CardReceiptId { get; set; }
-		public int? ExpenseId { get; set; }
-		public int? IncomeId { get; set; }
+		public int? ExpensePaymentId { get; set; }
+		public int? IncomeReceiptId { get; set; }
 	}
 }
