@@ -213,7 +213,7 @@ namespace BudgetAPI.Controllers
 				Description  = expense.Description,
 				ToPay        = expense.ToPay,
 				Paid         = expense.Paid,
-				Remaining    = expense.ToPay - expense.Paid,
+				Remaining    = expense.ToPay - Math.Abs(expense.Paid),
 				Note         = expense.Note,
 				CardId       = expense.CardId,
 				AccountId    = expense.AccountId,

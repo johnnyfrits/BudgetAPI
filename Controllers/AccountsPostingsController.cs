@@ -83,6 +83,8 @@ namespace BudgetAPI.Controllers
 		[HttpPost]
 		public async Task<ActionResult<AccountsPostings>> PostAccountsPostings(AccountsPostings accountsPostings)
 		{
+			accountsPostings.Position = (short)((_context.AccountsPostings.Max( o => o.Position) ?? 0) + 1);
+
 			_context.AccountsPostings.Add(accountsPostings);
 			await _context.SaveChangesAsync();
 
