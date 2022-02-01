@@ -150,6 +150,8 @@ namespace BudgetAPI.Controllers
 		[HttpPost]
 		public async Task<ActionResult<CardsPostings>> PostCardsPostings(CardsPostings cardsPostings)
 		{
+			cardsPostings.Position = (short)((_context.CardsPostings.Where(o => o.Reference == cardsPostings.Reference && o.CardId == cardsPostings.CardId).Max(o => o.Position) ?? 0) + 1);
+
 			_context.CardsPostings.Add(cardsPostings);
 
 			await _context.SaveChangesAsync();
@@ -229,12 +231,18 @@ namespace BudgetAPI.Controllers
 			return newReference;
 		}
 
-		private static List<CardsPostings> GenerateCardsPostings(CardsPostings cardPosting)
+		private short GetNewPosition(string reference, int cardId)
+		{
+			var newPosition = _context.CardsPostings.Where(e => e.Reference == reference && e.CardId == cardId).Max(e => e.Position) ?? 0;
+
+			return ++newPosition;
+		}
+
+		private List<CardsPostings> GenerateCardsPostings(CardsPostings cardPosting)
 		{
 			var cardsPostingsList = new List<CardsPostings>();
 
 			var reference    = cardPosting.Reference;
-			var position     = cardPosting.Position;
 			var totalAmount  = cardPosting.TotalAmount ?? 0;
 			var parcels      = cardPosting.Parcels ?? 1;
 			var amountParcel = Math.Round(totalAmount / parcels, 2, MidpointRounding.AwayFromZero);
@@ -250,7 +258,7 @@ namespace BudgetAPI.Controllers
 						Date         = cardPosting.Date,
 						Reference    = reference,
 						PeopleId     = cardPosting.PeopleId,
-						Position     = position++,
+						Position     = cardPosting.Id > 0 && i == 1 ? cardPosting.Position : GetNewPosition(reference, cardPosting.CardId),
 						Description  = cardPosting.Description,
 						ParcelNumber = i,
 						Parcels      = cardPosting.Parcels,
