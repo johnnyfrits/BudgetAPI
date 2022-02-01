@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
-
-namespace BudgetAPI.Models
+﻿namespace BudgetAPI.Models
 {
 	public class AccountsSummaryTotals
 	{
