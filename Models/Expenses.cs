@@ -16,6 +16,6 @@
 		public int? ParcelNumber { get; set; }
 		public int? Parcels { get; set; }
 		public decimal TotalToPay { get; set; }
-
+		public int? CategoryId { get; set; }
 	}
 }

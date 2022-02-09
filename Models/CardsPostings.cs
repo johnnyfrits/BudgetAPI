@@ -15,6 +15,7 @@
 		public decimal? TotalAmount { get; set; }
 		public bool Others { get; set; }
 		public string? Note { get; set; }
+		public int? CategoryId { get; set; }
 		public People? People { get; set; }
 	}
 }

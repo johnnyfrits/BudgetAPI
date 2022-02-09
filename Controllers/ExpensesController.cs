@@ -220,7 +220,8 @@ namespace BudgetAPI.Controllers
 				DueDate      = expense.DueDate,
 				ParcelNumber = expense.ParcelNumber,
 				Parcels      = expense.Parcels,
-				TotalToPay   = expense.TotalToPay
+				TotalToPay   = expense.TotalToPay,
+				CategoryId   = expense.CategoryId
 			};
 
 		private static string GetNewReference(string reference)
@@ -271,7 +272,8 @@ namespace BudgetAPI.Controllers
 						DueDate      = dueDate,
 						ParcelNumber = i,
 						Parcels      = expense.Parcels,
-						TotalToPay   = expense.TotalToPay
+						TotalToPay   = expense.TotalToPay,
+						CategoryId   = expense.CategoryId
 					};
 
 					expensesList.Add(e);
@@ -315,7 +317,8 @@ namespace BudgetAPI.Controllers
 						DueDate      = dueDate,
 						ParcelNumber = expense.ParcelNumber,
 						Parcels      = expense.Parcels,
-						TotalToPay   = expense.TotalToPay
+						TotalToPay   = expense.TotalToPay,
+						CategoryId   = expense.CategoryId
 					};
 
 					expensesList.Add(e);

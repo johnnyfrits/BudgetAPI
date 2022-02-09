@@ -16,6 +16,7 @@
 		public bool Others { get; set; }
 		public string? Note { get; set; }
 		public People? People { get; set; }
-		public bool GenarateParcels { get; set; }
+		public bool? GenarateParcels { get; set; }
+		public int? CategoryId { get; set; }
 	}
 }

@@ -92,6 +92,11 @@ namespace BudgetAPI.Controllers
 					throw;
 				}
 			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+
 
 			return Ok();
 		}
@@ -266,6 +271,7 @@ namespace BudgetAPI.Controllers
 						TotalAmount  = cardPosting.TotalAmount,
 						Others       = cardPosting.Others,
 						Note         = cardPosting.Note,
+						CategoryId   = cardPosting.CategoryId
 					};
 
 					cardsPostingsList.Add(cp);
