@@ -155,14 +155,26 @@ namespace BudgetAPI.Controllers
 		[HttpPost]
 		public async Task<ActionResult<CardsPostings>> PostCardsPostings(CardsPostings cardsPostings)
 		{
-			cardsPostings.Position = (short)((_context.CardsPostings.Where(o => o.Reference == cardsPostings.Reference && o.CardId == cardsPostings.CardId).Max(o => o.Position) ?? 0) + 1);
+			try
+			{
+				if (_context.People.FirstOrDefault( p => p.Id == cardsPostings.PeopleId) != null)
+				{
+					cardsPostings.People = null;
+				}
 
-			_context.CardsPostings.Add(cardsPostings);
+				cardsPostings.Position = (short)((_context.CardsPostings.Where(o => o.Reference == cardsPostings.Reference && o.CardId == cardsPostings.CardId).Max(o => o.Position) ?? 0) + 1);
 
-			await _context.SaveChangesAsync();
+				_context.CardsPostings.Add(cardsPostings);
 
-			return await GetCardsPostings(cardsPostings.Id);
-			//return CreatedAtAction("GetCardsPostings", new { id = cardsPostings.Id }, cardsPostings);
+				await _context.SaveChangesAsync();
+
+				return await GetCardsPostings(cardsPostings.Id);
+				//return CreatedAtAction("GetCardsPostings", new { id = cardsPostings.Id }, cardsPostings);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.ToString() + "\n\n" + ex.InnerException?.Message);
+			}
 		}
 
 		[HttpPost("AllParcels")]

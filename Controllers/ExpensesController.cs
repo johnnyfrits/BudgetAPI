@@ -48,6 +48,13 @@ namespace BudgetAPI.Controllers
 			return expenses;
 		}
 
+		[HttpGet("Categories")]
+		public async Task<ActionResult<IEnumerable<ExpensesByCategories>>> GetExpensesByCategories(string reference, int cardId)
+		{
+			return await _context.GetExpensesByCategories(reference, cardId).ToListAsync();
+		}
+
+
 		// PUT: api/Expenses/5
 		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPut("{id}")]
