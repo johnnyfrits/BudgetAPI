@@ -51,7 +51,44 @@ namespace BudgetAPI.Controllers
 		[HttpGet("Categories")]
 		public async Task<ActionResult<IEnumerable<ExpensesByCategories>>> GetExpensesByCategories(string reference, int cardId)
 		{
-			return await _context.GetExpensesByCategories(reference, cardId).ToListAsync();
+			var expensesByCategories = await _context.GetExpensesByCategories(reference, cardId).ToListAsync();
+
+			//foreach(ExpensesByCategories ec in expensesByCategories)
+			//{
+			//	ec.Expenses = _context.Expenses.Where(e => e.CategoryId == ec.Id &&
+			//											   e.Reference == reference);
+
+			//	ec.CardsPostings = _context.CardsPostings.Include(o => o.Card)
+			//											 .Where(cp => cp.CategoryId == ec.Id &&
+			//														  cp.Reference == reference &&
+			//														  (cardId == 0 || cp.CardId == cardId));
+
+			//}
+
+			return expensesByCategories;
+		}
+
+		[HttpGet("CategoriesById")]
+		//public ActionResult<ExpensesByCategories?> GetExpensesByCategoryId([FromQuery] ExpensesByCategories expensesByCategory)
+		public ActionResult<ExpensesByCategories?> GetExpensesAndCardPostingsByCategoryId(int? id, string reference, int cardId)
+		{
+			var expensesByCategory = new ExpensesByCategories
+			{
+				Id = id,
+				Reference = reference,
+				CardId = cardId
+			};
+
+			expensesByCategory.Expenses = _context.Expenses.Where(e => e.CategoryId == id &&
+																	   e.Reference == reference);
+
+			expensesByCategory.CardsPostings = _context.CardsPostings.Include(o => o.Card)
+																	 .Where(cp => cp.CategoryId == id &&
+																				  cp.Reference == reference &&
+																				  (cardId == 0 || cp.CardId == cardId));
+
+
+			return expensesByCategory;
 		}
 
 

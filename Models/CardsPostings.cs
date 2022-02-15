@@ -17,5 +17,6 @@
 		public string? Note { get; set; }
 		public int? CategoryId { get; set; }
 		public People? People { get; set; }
+		public Cards? Card { get; set; }
 	}
 }

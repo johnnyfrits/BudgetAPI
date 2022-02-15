@@ -6,5 +6,6 @@
 		public decimal ToReceive { get; set; }
 		public decimal Received { get; set; }
 		public decimal Remaining { get; set; }
+		public IEnumerable<CardsPostings> CardsPostings { get; set; }
 	}
 }

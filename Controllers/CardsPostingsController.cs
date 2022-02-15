@@ -62,7 +62,16 @@ namespace BudgetAPI.Controllers
 		[HttpGet("People")]
 		public async Task<ActionResult<IEnumerable<CardsPostingsPeople>>> GetCardsPostingsPeople(int cardId, string reference)
 		{
-			return await _context.GetCardsPostingsPeople(cardId, reference).ToListAsync();
+			var cardsPostingsPeople = await _context.GetCardsPostingsPeople(cardId, reference).ToListAsync();
+
+			foreach (CardsPostingsPeople cpp in cardsPostingsPeople)
+			{
+				cpp.CardsPostings = _context.CardsPostings.Where(o => o.PeopleId == cpp.Person && 
+																	  o.Reference == reference &&
+																	  (cardId == 0 || o.CardId == cardId));
+			}
+
+			return cardsPostingsPeople;
 		}
 
 		// PUT: api/CardsPostings/5
