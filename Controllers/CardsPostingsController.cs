@@ -64,14 +64,20 @@ namespace BudgetAPI.Controllers
 		{
 			var cardsPostingsPeople = await _context.GetCardsPostingsPeople(cardId, reference).ToListAsync();
 
-			foreach (CardsPostingsPeople cpp in cardsPostingsPeople)
-			{
-				cpp.CardsPostings = _context.CardsPostings.Where(o => o.PeopleId == cpp.Person && 
-																	  o.Reference == reference &&
-																	  (cardId == 0 || o.CardId == cardId));
-			}
-
 			return cardsPostingsPeople;
+		}
+
+		[HttpGet("PeopleById")]
+		public async Task<ActionResult<IEnumerable<CardsPostings>>> GetCardsPostingsByPeopleId(string? peopleId, string reference, int cardId)
+		{
+			var cardsPostings = await _context.CardsPostings.Include(o => o.Card)
+														    .Where(o => o.PeopleId == peopleId &&
+																	    o.Reference == reference &&
+																	    (cardId == 0 || o.CardId == cardId))
+															.OrderBy(o => o.Date).ThenBy(o => o.Position)
+															.ToListAsync();
+
+			return cardsPostings;
 		}
 
 		// PUT: api/CardsPostings/5
