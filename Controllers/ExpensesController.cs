@@ -79,13 +79,18 @@ namespace BudgetAPI.Controllers
 				CardId = cardId
 			};
 
+			id = id == 0 ? null : id;
+
 			expensesByCategory.Expenses = _context.Expenses.Where(e => e.CategoryId == id &&
-																	   e.Reference == reference).OrderBy(o => o.Position);
+																	   e.Reference == reference &&
+																	   e.CardId == null).OrderBy(o => o.Position);
 
 			expensesByCategory.CardsPostings = _context.CardsPostings.Include(o => o.Card)
 																	 .Where(cp => cp.CategoryId == id &&
 																				  cp.Reference == reference &&
-																				  (cardId == 0 || cp.CardId == cardId)).OrderBy(o => o.Date).ThenBy(o => o.Position);
+																				  (cardId == 0 || cp.CardId == cardId) &&
+																				  !cp.Others)
+																	 .OrderBy(o => o.Date).ThenBy(o => o.Position);
 
 
 			return expensesByCategory;

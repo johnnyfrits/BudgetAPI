@@ -71,7 +71,7 @@ namespace BudgetAPI.Controllers
 		public async Task<ActionResult<IEnumerable<CardsPostings>>> GetCardsPostingsByPeopleId(string? peopleId, string reference, int cardId)
 		{
 			var cardsPostings = await _context.CardsPostings.Include(o => o.Card)
-														    .Where(o => o.PeopleId == peopleId &&
+														    .Where(o => (peopleId == null || o.PeopleId == peopleId) &&
 																	    o.Reference == reference &&
 																	    (cardId == 0 || o.CardId == cardId))
 															.OrderBy(o => o.Date).ThenBy(o => o.Position)
