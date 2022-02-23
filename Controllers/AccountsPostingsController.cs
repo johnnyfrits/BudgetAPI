@@ -86,6 +86,17 @@ namespace BudgetAPI.Controllers
 			accountsPostings.Position = (short)((_context.AccountsPostings.Where(o => o.Reference == accountsPostings.Reference).Max( o => o.Position) ?? 0) + 1);
 
 			_context.AccountsPostings.Add(accountsPostings);
+
+			if (accountsPostings.ExpenseId != null && accountsPostings.Type == "P")
+			{
+				var expenses = await _context.Expenses.FindAsync(accountsPostings.ExpenseId);
+				
+				if (expenses != null)
+				{
+					expenses.Scheduled = false;
+				}
+			}
+
 			await _context.SaveChangesAsync();
 
 			return CreatedAtAction("GetAccountsPostings", new { id = accountsPostings.Id }, accountsPostings);
