@@ -10,6 +10,7 @@ namespace BudgetAPI.Models
 		public string? Color { get; set; }
 		public string? Background { get; set; }
 		public bool? CalcInGeneral { get; set; }
+		public bool? Disabled { get; set; }
 		public decimal GrandTotalBalance { get; set; }
 		public decimal TotalBalance { get; set; }
 		public decimal PreviousBalance { get; set; }
