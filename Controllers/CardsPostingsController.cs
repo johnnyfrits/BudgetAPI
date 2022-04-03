@@ -68,16 +68,26 @@ namespace BudgetAPI.Controllers
 		}
 
 		[HttpGet("PeopleById")]
-		public async Task<ActionResult<IEnumerable<CardsPostings>>> GetCardsPostingsByPeopleId(string? peopleId, string reference, int cardId)
+		public ActionResult<CardsPostingsPeople?> GetCardsPostingsByPeopleId(string? peopleId, string reference, int cardId)
 		{
-			var cardsPostings = await _context.CardsPostings.Include(o => o.Card)
-														    .Where(o => (peopleId == null || o.PeopleId == peopleId) &&
-																	    o.Reference == reference &&
-																	    (cardId == 0 || o.CardId == cardId))
-															.OrderBy(o => o.Date).ThenBy(o => o.Position)
-															.ToListAsync();
+			var cardsPostingPeople = new CardsPostingsPeople
+			{
+				Reference = reference,
+				CardId    = cardId,
+				Person    = peopleId
+			};
 
-			return cardsPostings;
+
+			cardsPostingPeople.CardsPostings = _context.CardsPostings.Include(o => o.Card)
+																	 .Where(o => (peopleId == null || o.PeopleId == peopleId) &&
+																		   		  o.Reference == reference &&
+																		   		  (cardId == 0 || o.CardId == cardId))
+																	 .OrderBy(o => o.Date).ThenBy(o => o.Position);
+
+			cardsPostingPeople.Incomes = _context.Incomes.Where(o => o.PeopleId == peopleId &&
+																	 o.Reference == reference);
+
+			return cardsPostingPeople;
 		}
 
 		// PUT: api/CardsPostings/5

@@ -19,5 +19,6 @@
 		public decimal TotalToPay { get; set; }
 		public int? CategoryId { get; set; }
 		public bool? Scheduled { get; set; }
+		public string? PeopleId { get; set; }
 	}
 }

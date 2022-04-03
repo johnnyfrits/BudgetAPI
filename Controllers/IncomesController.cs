@@ -211,7 +211,8 @@ namespace BudgetAPI.Controllers
 				Note        = income.Note,
 				CardId      = income.CardId,
 				AccountId   = income.AccountId,
-				Type        = income.Type
+				Type        = income.Type,
+				PeopleId    = income.PeopleId
 			};
 
 		private static string GetNewReference(string reference)
@@ -252,7 +253,8 @@ namespace BudgetAPI.Controllers
 					Note         = income.Note,
 					CardId       = income.CardId,
 					AccountId    = income.AccountId,
-					Type         = income.Type
+					Type         = income.Type,
+					PeopleId     = income.PeopleId
 				};
 
 				incomesList.Add(e);

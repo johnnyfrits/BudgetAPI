@@ -271,7 +271,8 @@ namespace BudgetAPI.Controllers
 				Parcels      = expense.Parcels,
 				TotalToPay   = expense.TotalToPay,
 				CategoryId   = expense.CategoryId,
-				Scheduled    = expense.Scheduled
+				Scheduled    = expense.Scheduled,
+				PeopleId     = expense.PeopleId
 			};
 
 		private static string GetNewReference(string reference)
@@ -324,7 +325,8 @@ namespace BudgetAPI.Controllers
 						Parcels      = expense.Parcels,
 						TotalToPay   = expense.TotalToPay,
 						CategoryId   = expense.CategoryId,
-						Scheduled    = expense.Scheduled
+						Scheduled    = expense.Scheduled,
+						PeopleId     = expense.PeopleId
 					};
 
 					expensesList.Add(e);
@@ -370,7 +372,8 @@ namespace BudgetAPI.Controllers
 						Parcels      = expense.Parcels,
 						TotalToPay   = expense.TotalToPay,
 						CategoryId   = expense.CategoryId,
-						Scheduled    = expense.Scheduled
+						Scheduled    = expense.Scheduled,
+						PeopleId     = expense.PeopleId
 					};
 
 					expensesList.Add(e);

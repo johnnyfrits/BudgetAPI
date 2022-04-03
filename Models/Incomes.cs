@@ -13,6 +13,6 @@
 		public int? CardId { get; set; }
 		public int? AccountId { get; set; }
 		public string? Type { get; set; }
-
+		public string? PeopleId { get; set; }
 	}
 }
