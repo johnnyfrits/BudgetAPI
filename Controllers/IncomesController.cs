@@ -115,6 +115,24 @@ namespace BudgetAPI.Controllers
 			}
 		}
 
+
+		[HttpPut("AddValue/{id}")]
+		public async Task<ActionResult<Incomes>> AddValue(int id, decimal value)
+		{
+			var incomes = await _context.Incomes.FindAsync(id);
+
+			if (incomes == null)
+			{
+				return NotFound();
+			}
+
+			incomes.ToReceive += value;
+
+			await _context.SaveChangesAsync();
+
+			return Ok();
+		}
+
 		[HttpPut("SetPositions")]
 		public async Task<ActionResult<Incomes>> SetPositions(List<Incomes> incomes)
 		{

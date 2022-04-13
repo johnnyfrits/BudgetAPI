@@ -179,6 +179,22 @@ namespace BudgetAPI.Controllers
 			return Ok();
 		}
 
+		[HttpPut("AddValue/{id}")]
+		public async Task<ActionResult<Expenses>> AddValue(int id, decimal value)
+		{
+			var incomes = await _context.Expenses.FindAsync(id);
+
+			if (incomes == null)
+			{
+				return NotFound();
+			}
+
+			incomes.ToPay += value;
+
+			await _context.SaveChangesAsync();
+
+			return Ok();
+		}
 
 		// POST: api/Expenses
 		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
