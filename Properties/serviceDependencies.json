@@ -7,9 +7,6 @@
       "type": "mssql",
       "connectionId": "ConnectionStrings:LocalConnection"
     },
-    "apis1": {
-      "type": "apis"
-    },
     "mssql1": {
       "type": "mssql",
       "connectionId": "ConnectionStrings:AzureConnection"
