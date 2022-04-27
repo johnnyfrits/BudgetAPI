@@ -48,6 +48,17 @@ namespace BudgetAPI.Controllers
 			return incomes;
 		}
 
+		[HttpGet("combolist/{reference}")]
+		public async Task<ActionResult<IEnumerable<IncomesDTO2>>> GetIncomesComboList(string reference)
+		{
+			var incomes = await _context.Incomes.Where(o => o.Reference == reference)
+												.OrderBy(o => o.Position)
+												.Select(o => IncomesToComboList(o))
+												.ToListAsync();
+
+			return incomes;
+		}
+
 		// PUT: api/Incomes/5
 		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPut("{id}")]
@@ -231,6 +242,14 @@ namespace BudgetAPI.Controllers
 				AccountId   = income.AccountId,
 				Type        = income.Type,
 				PeopleId    = income.PeopleId
+			};
+
+		private static IncomesDTO2 IncomesToComboList(Incomes income) =>
+			new IncomesDTO2
+			{
+				Id          = income.Id,
+				Position    = income.Position,
+				Description = income.Description
 			};
 
 		private static string GetNewReference(string reference)

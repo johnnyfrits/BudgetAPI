@@ -48,6 +48,17 @@ namespace BudgetAPI.Controllers
 			return expenses;
 		}
 
+		[HttpGet("combolist/{reference}")]
+		public async Task<ActionResult<IEnumerable<ExpensesDTO2>>> GetExpensesComboList(string reference)
+		{
+			var expenses = await _context.Expenses.Where(o => o.Reference == reference)
+												  .OrderBy(o => o.Position)
+												  .Select(o => ExpensesToComboList(o))
+												  .ToListAsync();
+
+			return expenses;
+		}
+
 		[HttpGet("Categories")]
 		public async Task<ActionResult<IEnumerable<ExpensesByCategories>>> GetExpensesByCategories(string reference, int cardId)
 		{
@@ -290,6 +301,16 @@ namespace BudgetAPI.Controllers
 				Scheduled    = expense.Scheduled,
 				PeopleId     = expense.PeopleId
 			};
+
+
+
+		private static ExpensesDTO2 ExpensesToComboList(Expenses expense) =>
+		new ExpensesDTO2
+		{
+			Id           = expense.Id,
+			Position     = expense.Position,
+			Description  = expense.Description
+		};
 
 		private static string GetNewReference(string reference)
 		{
