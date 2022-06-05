@@ -1,0 +1,4 @@
+{
+	"appService.defaultWebAppToDeploy": "/subscriptions/fbb758fe-e532-495a-9c3e-7835b9f183c9/microsoft.web/sites/subscriptions/fbb758fe-e532-495a-9c3e-7835b9f183c9/resourceGroups/Budget/providers/Microsoft.Web/sites/BudgetAPI",
+	"appService.deploySubpath": "Properties\\PublishProfiles"
+}

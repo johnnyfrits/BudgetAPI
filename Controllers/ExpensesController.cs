@@ -193,14 +193,15 @@ namespace BudgetAPI.Controllers
 		[HttpPut("AddValue/{id}")]
 		public async Task<ActionResult<Expenses>> AddValue(int id, decimal value)
 		{
-			var incomes = await _context.Expenses.FindAsync(id);
+			var expenses = await _context.Expenses.FindAsync(id);
 
-			if (incomes == null)
+			if (expenses == null)
 			{
 				return NotFound();
 			}
 
-			incomes.ToPay += value;
+			expenses.ToPay      += value;
+			expenses.TotalToPay += value;
 
 			await _context.SaveChangesAsync();
 
@@ -307,9 +308,9 @@ namespace BudgetAPI.Controllers
 		private static ExpensesDTO2 ExpensesToComboList(Expenses expense) =>
 		new ExpensesDTO2
 		{
-			Id           = expense.Id,
-			Position     = expense.Position,
-			Description  = expense.Description
+			Id          = expense.Id,
+			Position    = expense.Position,
+			Description = expense.Description
 		};
 
 		private static string GetNewReference(string reference)
