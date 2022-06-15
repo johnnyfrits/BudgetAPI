@@ -40,7 +40,7 @@ namespace BudgetAPI.Controllers
 		[HttpGet("AccountsSummary")]
 		public async Task<ActionResult<IEnumerable<AccountsSummary>>> GetAccountsSummary(string reference)
 		{
-			return await _context.GetAccountsSummary(reference).ToListAsync();
+			return await _context.GetAccountsSummary(reference, 1).ToListAsync();
 		}
 
 		[HttpGet("SummaryTotals")]
