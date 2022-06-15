@@ -109,7 +109,7 @@ namespace BudgetAPI.Controllers
 				Name       = card.Name,
 				Color      = card.Color,
 				Background = card.Background,
-				User       = UsersController.UserToDTO(card.User),
+				//User       = UsersControllerOld.UserToDTO(card.User),
 				Disabled   = card.Disabled
 			};
 	}

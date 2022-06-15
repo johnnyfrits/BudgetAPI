@@ -1,13 +1,14 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace BudgetAPI.Models
 {
-	public class Users
+	public class UsersRegisterRequest
 	{
-		public int Id { get; set; }
+		[Required]
 		public string Name { get; set; }
+		[Required]
 		public string Login { get; set; }
-		[JsonIgnore]
+		[Required]
 		public string Password { get; set; }
 	}
 }

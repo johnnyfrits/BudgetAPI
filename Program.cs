@@ -1,5 +1,7 @@
-using System.Diagnostics;
+using BudgetAPI.Authorization;
 using BudgetAPI.Data;
+using BudgetAPI.Helpers;
+using BudgetAPI.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,10 +10,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 int mode = 0;
 
-if (Debugger.IsAttached)
-{
-	mode = 1;
-}
+//if (Debugger.IsAttached)
+//{
+//	mode = 1;
+//}
 
 if (mode == 0)
 {
@@ -23,10 +25,8 @@ else
 }
 
 builder.Services.AddControllers();
-
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
 builder.Services.AddSwaggerGen(config =>
 {
 	config.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
@@ -35,8 +35,15 @@ builder.Services.AddSwaggerGen(config =>
 		Version = "v1"
 	});
 });
-
 builder.Services.AddCors();
+// Configure strongly typed settings object
+builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
+// Configure DI for application services
+builder.Services.AddScoped<IJwtUtils, JwtUtils>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddHttpContextAccessor();
+
 
 var app = builder.Build();
 
@@ -55,7 +62,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();	
+// global error handler
+app.UseMiddleware<ErrorHandlerMiddleware>();
+
+// custom jwt auth middleware
+app.UseMiddleware<JwtMiddleware>();
 
 app.MapControllers();
 

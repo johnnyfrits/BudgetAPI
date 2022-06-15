@@ -1,110 +1,74 @@
-﻿using BudgetAPI.Data;
+﻿using BudgetAPI.Authorization;
+using BudgetAPI.Helpers;
 using BudgetAPI.Models;
+using BudgetAPI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace BudgetAPI.Controllers
 {
-	[Route("api/[controller]")]
+	[Authorize]
 	[ApiController]
+	[Route("api/[controller]")]
 	public class UsersController : ControllerBase
 	{
-		private readonly BudgetContext _context;
+		private readonly IUserService _userService;
+		private readonly AppSettings _appSettings;
 
-		public UsersController(BudgetContext context)
+		public UsersController(IUserService userService, IOptions<AppSettings> appSettings)
 		{
-			_context = context;
+			_userService = userService;
+			_appSettings = appSettings.Value;
 		}
 
-		// GET: api/Users
+		[AllowAnonymous]
+		[HttpPost("authenticate")]
+		public IActionResult Authenticate(UsersAuthenticateRequest model)
+		{
+			UsersAuthenticateResponse? response = _userService.Authenticate(model);
+
+			return Ok(response);
+		}
+
+		[AllowAnonymous]
+		[HttpPost("register")]
+		public IActionResult Register(UsersRegisterRequest model)
+		{
+			_userService.Register(model);
+
+			return Ok(new { message = "Cadastro concluído!" });
+		}
+
 		[HttpGet]
-		public async Task<ActionResult<IEnumerable<Users>>> GetUser()
+		public IActionResult GetAll()
 		{
-			return await _context.Users.ToListAsync();
+			IEnumerable<Users>? users = _userService.GetAll();
+
+			return Ok(users);
 		}
 
-		// GET: api/Users/5
 		[HttpGet("{id}")]
-		public async Task<ActionResult<Users>> GetUser(int id)
+		public IActionResult GetById(int id)
 		{
-			var user = await _context.Users.FindAsync(id);
+			Users? user = _userService.GetById(id);
 
-			if (user == null)
-			{
-				return NotFound();
-			}
-
-			return user;
+			return Ok(user);
 		}
 
-		// PUT: api/Users/5
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPut("{id}")]
-		public async Task<IActionResult> PutUsers(int id, Users user)
+		public IActionResult Update(int id, UsersUpdateRequest model)
 		{
-			if (id != user.Id)
-			{
-				return BadRequest();
-			}
+			_userService.Update(id, model);
 
-			_context.Entry(user).State = EntityState.Modified;
-
-			try
-			{
-				await _context.SaveChangesAsync();
-			}
-			catch (DbUpdateConcurrencyException)
-			{
-				if (!UserExists(id))
-				{
-					return NotFound();
-				}
-				else
-				{
-					throw;
-				}
-			}
-
-			return NoContent();
+			return Ok(new { message = "Usuário atualizado!" });
 		}
 
-		// POST: api/Users
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-		[HttpPost]
-		public async Task<ActionResult<Users>> PostUser(Users user)
-		{
-			_context.Users.Add(user);
-			await _context.SaveChangesAsync();
-
-			return CreatedAtAction("GetUser", new { id = user.Id }, user);
-		}
-
-		// DELETE: api/Users/5
 		[HttpDelete("{id}")]
-		public async Task<IActionResult> DeleteUser(int id)
+		public IActionResult Delete(int id)
 		{
-			var user = await _context.Users.FindAsync(id);
-			if (user == null)
-			{
-				return NotFound();
-			}
+			_userService.Delete(id);
 
-			_context.Users.Remove(user);
-			await _context.SaveChangesAsync();
-
-			return NoContent();
+			return Ok(new { message = "Usuário excluído!" });
 		}
-
-		private bool UserExists(int id)
-		{
-			return _context.Users.Any(e => e.Id == id);
-		}
-
-		public static UsersDTO UserToDTO(Users user) =>
-			new UsersDTO
-			{
-				Id   = user.Id,
-				Name = user.Name
-			};
 	}
 }

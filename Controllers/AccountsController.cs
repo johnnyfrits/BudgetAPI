@@ -1,72 +1,54 @@
-﻿using BudgetAPI.Data;
+﻿using BudgetAPI.Authorization;
+using BudgetAPI.Data;
 using BudgetAPI.Models;
+using BudgetAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BudgetAPI.Controllers
 {
+	[Authorize]
 	[Route("api/[controller]")]
 	[ApiController]
 	public class AccountsController : ControllerBase
 	{
 		private readonly BudgetContext _context;
+		private readonly IAccountService _accountService;
 
-		public AccountsController(BudgetContext context)
+		public AccountsController(IAccountService accountService)
 		{
-			_context = context;
+			_accountService = accountService;
 		}
 
 		// GET: api/Accounts
 		[HttpGet]
 		public async Task<ActionResult<IEnumerable<Accounts>>> GetAccount()
 		{
-			return await _context.Accounts.ToListAsync();
+			return await _accountService.GetAccount().ToListAsync();
 		}
 
 		[HttpGet("Totals")]
 		public async Task<ActionResult<AccountsDTO>> GetAccountTotals(int account, string reference)
 		{
-			var accountDto = new AccountsDTO();
-
-			try
-			{
-				accountDto = await _context.GetAccountTotals(account, reference).FirstAsync();
-			}
-			catch { /**/ }
-
-			return accountDto;
+			return await _accountService.GetAccountTotals(account, reference).FirstOrDefaultAsync() ?? new AccountsDTO();
 		}
 
 		[HttpGet("AccountsSummary")]
 		public async Task<ActionResult<IEnumerable<AccountsSummary>>> GetAccountsSummary(string reference)
 		{
-			return await _context.GetAccountsSummary(reference).ToListAsync();
+			return await _accountService.GetAccountsSummary(reference).ToListAsync();
 		}
 
 		[HttpGet("SummaryTotals")]
 		public async Task<ActionResult<AccountsSummaryTotals>> GetAccountsSummaryTotals(string reference)
 		{
-			var accountsSummaryTotals = new AccountsSummaryTotals();
-
-			try
-			{
-				accountsSummaryTotals = await _context.GetTotalsAccountsSummary(reference).FirstAsync();
-			}
-			catch { /**/ }
-
-			return accountsSummaryTotals;
+			return await _accountService.GetAccountsSummaryTotals(reference).FirstOrDefaultAsync() ?? new AccountsSummaryTotals();
 		}
 
-		// GET: api/Accounts/5
 		[HttpGet("{id}")]
 		public async Task<ActionResult<Accounts>> GetAccount(int id)
 		{
-			var accounts = await _context.Accounts.FindAsync(id);
-
-			if (accounts == null)
-			{
-				return NotFound();
-			}
+			var accounts = await _accountService.GetAccount(id).FirstOrDefaultAsync() ?? new Accounts();
 
 			return accounts;
 		}
@@ -133,7 +115,5 @@ namespace BudgetAPI.Controllers
 		{
 			return _context.Accounts.Any(e => e.Id == id);
 		}
-
-
 	}
 }
