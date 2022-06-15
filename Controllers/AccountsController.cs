@@ -30,7 +30,7 @@ namespace BudgetAPI.Controllers
 
 			try
 			{
-				accountDto = await _context.GetAccountTotals(account, reference).FirstAsync();
+				accountDto = await _context.GetAccountTotals(account, reference, 1).FirstAsync();
 			}
 			catch { /**/ }
 
@@ -50,7 +50,7 @@ namespace BudgetAPI.Controllers
 
 			try
 			{
-				accountsSummaryTotals = await _context.GetTotalsAccountsSummary(reference).FirstAsync();
+				accountsSummaryTotals = await _context.GetTotalsAccountsSummary(reference, 1).FirstAsync();
 			}
 			catch { /**/ }
 
