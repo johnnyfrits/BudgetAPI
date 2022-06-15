@@ -40,14 +40,7 @@ namespace BudgetAPI.Services
 
 			try
 			{
-				//var account = GetAccount(accountId).FirstOrDefault();
-
-				//if (account!.UserId == _user!.Id)
-				//{
-				//	accountDto = _context.GetAccountTotals(accountId, reference);
-				//}
-
-				accountDto = _context.GetAccountTotals(accountId, reference).Where(a => a.UserId == _user.Id);
+				accountDto = _context.GetAccountTotals(accountId, reference, _user.Id);
 			}
 			catch { /**/ }
 
@@ -73,7 +66,7 @@ namespace BudgetAPI.Services
 
 			try
 			{
-				accountsSummaryTotals = _context.GetTotalsAccountsSummary(reference);
+				accountsSummaryTotals = _context.GetTotalsAccountsSummary(reference, _user.Id);
 			}
 			catch { /**/ }
 
