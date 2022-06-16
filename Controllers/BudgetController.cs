@@ -19,7 +19,7 @@ namespace BudgetAPI.Controllers
 		[HttpGet("Totals")]
 		public async Task<ActionResult<BudgetTotals?>> GetAccountsSummary(string reference)
 		{
-			return await _context.GetBudgetTotals(reference).FirstOrDefaultAsync();
+			return await _context.GetBudgetTotals(reference, 1).FirstOrDefaultAsync();
 		}
 	}
 }

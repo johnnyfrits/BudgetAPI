@@ -62,7 +62,7 @@ namespace BudgetAPI.Controllers
 		[HttpGet("Categories")]
 		public async Task<ActionResult<IEnumerable<ExpensesByCategories>>> GetExpensesByCategories(string reference, int cardId)
 		{
-			var expensesByCategories = await _context.GetExpensesByCategories(reference, cardId).ToListAsync();
+			var expensesByCategories = await _context.GetExpensesByCategories(reference, cardId, 1).ToListAsync();
 
 			//foreach(ExpensesByCategories ec in expensesByCategories)
 			//{
