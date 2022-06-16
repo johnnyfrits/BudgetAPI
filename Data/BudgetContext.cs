@@ -26,7 +26,7 @@ namespace BudgetAPI.Data
 			modelBuilder.HasDbFunction(typeof(BudgetContext).GetMethod(nameof(GetTotalsAccountsSummary), new[] { typeof(string), typeof(int) }));
 			modelBuilder.HasDbFunction(typeof(BudgetContext).GetMethod(nameof(GetCardsPostingsPeople), new[] { typeof(int), typeof(string) }));
 			modelBuilder.HasDbFunction(typeof(BudgetContext).GetMethod(nameof(GetBudgetTotals), new[] { typeof(string), typeof(int) }));
-			modelBuilder.HasDbFunction(typeof(BudgetContext).GetMethod(nameof(GetExpensesByCategories), new[] { typeof(string), typeof(int) }));
+			modelBuilder.HasDbFunction(typeof(BudgetContext).GetMethod(nameof(GetExpensesByCategories), new[] { typeof(string), typeof(int), typeof(int) }));
 		}
 
 		public IQueryable<AccountsDTO> GetAccountTotals(int accountId, string reference, int userId) => FromExpression(() => GetAccountTotals(accountId, reference, userId));
@@ -34,7 +34,7 @@ namespace BudgetAPI.Data
 		public IQueryable<AccountsSummaryTotals> GetTotalsAccountsSummary(string reference, int userId) => FromExpression(() => GetTotalsAccountsSummary(reference, userId));
 		public IQueryable<CardsPostingsPeople> GetCardsPostingsPeople(int cardId, string reference) => FromExpression(() => GetCardsPostingsPeople(cardId, reference));
 		public IQueryable<BudgetTotals> GetBudgetTotals(string reference, int userId) => FromExpression(() => GetBudgetTotals(reference, userId));
-		public IQueryable<ExpensesByCategories> GetExpensesByCategories(string reference, int cardId) => FromExpression(() => GetExpensesByCategories(reference, cardId));
+		public IQueryable<ExpensesByCategories> GetExpensesByCategories(string reference, int cardId, int userId) => FromExpression(() => GetExpensesByCategories(reference, cardId, userId));
 
 		public DbSet<Accounts> Accounts { get; set; }
 		public DbSet<Cards> Cards { get; set; }
