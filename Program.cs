@@ -43,6 +43,7 @@ builder.Services.AddScoped<IJwtUtils, JwtUtils>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IAccountPostingService, AccountPostingService>();
+builder.Services.AddScoped<IBudgetService, BudgetService>();
 builder.Services.AddHttpContextAccessor();
 
 
