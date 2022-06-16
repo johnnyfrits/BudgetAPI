@@ -1,33 +1,36 @@
-﻿using BudgetAPI.Data;
+﻿using BudgetAPI.Authorization;
+using BudgetAPI.Data;
 using BudgetAPI.Models;
+using BudgetAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BudgetAPI.Controllers
 {
+	[Authorize]
 	[Route("api/[controller]")]
 	[ApiController]
 	public class AccountsPostingsController : ControllerBase
 	{
-		private readonly BudgetContext _context;
+		private readonly IAccountPostingService _accountPostingService;
 
-		public AccountsPostingsController(BudgetContext context)
+		public AccountsPostingsController(IAccountPostingService accountPostingService)
 		{
-			_context = context;
+			_accountPostingService = accountPostingService;
 		}
 
 		// GET: api/AccountsPostings
 		[HttpGet]
 		public async Task<ActionResult<IEnumerable<AccountsPostings>>> GetAccountsPostings()
 		{
-			return await _context.AccountsPostings.OrderBy(o => o.Position).ToListAsync();
+			return await _accountPostingService.GetAccountsPostings().ToListAsync();
 		}
 
 		// GET: api/AccountsPostings/5
 		[HttpGet("{id}")]
 		public async Task<ActionResult<AccountsPostings>> GetAccountsPostings(int id)
 		{
-			var accountsPostings = await _context.AccountsPostings.FindAsync(id);
+			AccountsPostings? accountsPostings = await _accountPostingService.GetAccountsPostings(id).FirstOrDefaultAsync();
 
 			if (accountsPostings == null)
 			{
@@ -40,38 +43,33 @@ namespace BudgetAPI.Controllers
 		[HttpGet("{accountId}/{reference}")]
 		public async Task<ActionResult<IEnumerable<AccountsPostings>>> GetAccountsPostings(int accountId, string reference)
 		{
-			var accountsPostings = await _context.AccountsPostings.Where(o => o.AccountId == accountId && o.Reference == reference)
-																  .OrderBy(o => o.Position)
-																  .ToListAsync();
+			var accountsPostings = await _accountPostingService.GetAccountsPostings(accountId, reference).ToListAsync();
 
 			return accountsPostings;
 		}
 
 		// PUT: api/AccountsPostings/5
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPut("{id}")]
 		public async Task<IActionResult> PutAccountsPostings(int id, AccountsPostings accountsPostings)
 		{
-			if (id != accountsPostings.Id)
+			if (id != accountsPostings.Id || !_accountPostingService.ValidarUsuario(id))
 			{
 				return BadRequest();
 			}
 
-			_context.Entry(accountsPostings).State = EntityState.Modified;
-
 			try
 			{
-				await _context.SaveChangesAsync();
+				await _accountPostingService.PutAccountsPostings(id, accountsPostings);
 			}
-			catch (DbUpdateConcurrencyException)
+			catch (DbUpdateConcurrencyException e)
 			{
-				if (!AccountsPostingsExists(id))
+				if (!_accountPostingService.AccountsPostingsExists(id))
 				{
 					return NotFound();
 				}
 				else
 				{
-					throw;
+					throw e;
 				}
 			}
 
@@ -79,62 +77,41 @@ namespace BudgetAPI.Controllers
 		}
 
 		// POST: api/AccountsPostings
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPost]
 		public async Task<ActionResult<AccountsPostings>> PostAccountsPostings(AccountsPostings accountsPostings)
 		{
-			accountsPostings.Position = (short)((_context.AccountsPostings.Where(o => o.Reference == accountsPostings.Reference).Max( o => o.Position) ?? 0) + 1);
-
-			_context.AccountsPostings.Add(accountsPostings);
-
-			if (accountsPostings.ExpenseId != null && accountsPostings.Type == "P")
+			if (!_accountPostingService.ValidateAccountAndUser(accountsPostings.AccountId))
 			{
-				var expenses = await _context.Expenses.FindAsync(accountsPostings.ExpenseId);
-				
-				if (expenses != null)
-				{
-					expenses.Scheduled = false;
-				}
+				return BadRequest();
 			}
 
-			await _context.SaveChangesAsync();
+			await _accountPostingService.PostAccountsPostings(accountsPostings);
 
 			return CreatedAtAction("GetAccountsPostings", new { id = accountsPostings.Id }, accountsPostings);
 		}
-
-		[HttpPut("SetPositions")]
-		public async Task<ActionResult<AccountsPostings>> SetPositions(List<AccountsPostings> accountsPostings)
-		{
-			foreach (AccountsPostings accountPosting in accountsPostings)
-			{
-				_context.Entry(accountPosting).State = EntityState.Modified;
-			}
-
-			await _context.SaveChangesAsync();
-
-			return Ok();
-		}
-
 
 		// DELETE: api/AccountsPostings/5
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteAccountsPostings(int id)
 		{
-			var accountsPostings = await _context.AccountsPostings.FindAsync(id);
+			AccountsPostings? accountsPostings = await _accountPostingService.GetAccountsPostings(id).FirstOrDefaultAsync();
+			
 			if (accountsPostings == null)
 			{
 				return NotFound();
 			}
 
-			_context.AccountsPostings.Remove(accountsPostings);
-			await _context.SaveChangesAsync();
+			await _accountPostingService.DeleteAccountsPostings(accountsPostings);
 
 			return NoContent();
 		}
 
-		private bool AccountsPostingsExists(int id)
+		[HttpPut("SetPositions")]
+		public async Task<ActionResult<AccountsPostings>> SetPositions(List<AccountsPostings> accountsPostings)
 		{
-			return _context.AccountsPostings.Any(e => e.Id == id);
+			await _accountPostingService.SetPositions(accountsPostings);
+
+			return Ok();
 		}
 	}
 }

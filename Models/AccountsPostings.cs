@@ -14,5 +14,6 @@
 		public int? CardReceiptId { get; set; }
 		public int? ExpenseId { get; set; }
 		public int? IncomeId { get; set; }
+		public Accounts? Account { get; set; }
 	}
 }

@@ -12,7 +12,6 @@ namespace BudgetAPI.Controllers
 	[ApiController]
 	public class AccountsController : ControllerBase
 	{
-		private readonly BudgetContext _context;
 		private readonly IAccountService _accountService;
 
 		public AccountsController(IAccountService accountService)
@@ -48,36 +47,38 @@ namespace BudgetAPI.Controllers
 		[HttpGet("{id}")]
 		public async Task<ActionResult<Accounts>> GetAccount(int id)
 		{
-			var accounts = await _accountService.GetAccount(id).FirstOrDefaultAsync() ?? new Accounts();
+			Accounts? accounts = await _accountService.GetAccount(id).FirstOrDefaultAsync();
+
+			if (accounts == null)
+			{
+				return NotFound();
+			}
 
 			return accounts;
 		}
 
 		// PUT: api/Accounts/5
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPut("{id}")]
-		public async Task<IActionResult> PutAccount(int id, Accounts accounts)
+		public async Task<IActionResult> PutAccount(int id, Accounts account)
 		{
-			if (id != accounts.Id)
+			if (id != account.Id || !_accountService.ValidarUsuario(account.UserId))
 			{
 				return BadRequest();
 			}
 
-			_context.Entry(accounts).State = EntityState.Modified;
-
 			try
 			{
-				await _context.SaveChangesAsync();
+				await _accountService.PutAccount(id, account);
 			}
-			catch (DbUpdateConcurrencyException)
+			catch (DbUpdateConcurrencyException e)
 			{
-				if (!AccountExists(id))
+				if (!_accountService.AccountExists(id))
 				{
 					return NotFound();
 				}
 				else
 				{
-					throw;
+					throw e;
 				}
 			}
 
@@ -85,35 +86,33 @@ namespace BudgetAPI.Controllers
 		}
 
 		// POST: api/Accounts
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPost]
-		public async Task<ActionResult<Accounts>> PostAccount(Accounts accounts)
+		public async Task<ActionResult<Accounts>> PostAccount(Accounts account)
 		{
-			_context.Accounts.Add(accounts);
-			await _context.SaveChangesAsync();
+			await _accountService.PostAccount(account);
 
-			return CreatedAtAction("GetAccount", new { id = accounts.Id }, accounts);
+			return CreatedAtAction("GetAccount", new { id = account.Id }, account);
 		}
 
 		// DELETE: api/Accounts/5
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteAccount(int id)
 		{
-			var accounts = await _context.Accounts.FindAsync(id);
-			if (accounts == null)
+			Accounts? account = await _accountService.GetAccount(id).FirstOrDefaultAsync();
+
+			if (account == null)
 			{
 				return NotFound();
 			}
 
-			_context.Accounts.Remove(accounts);
-			await _context.SaveChangesAsync();
+			if (!_accountService.ValidarUsuario(account.UserId))
+			{
+				return BadRequest();
+			}
+
+			await _accountService.DeleteAccount(account);
 
 			return NoContent();
-		}
-
-		private bool AccountExists(int id)
-		{
-			return _context.Accounts.Any(e => e.Id == id);
 		}
 	}
 }

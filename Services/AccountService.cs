@@ -1,6 +1,5 @@
 ﻿using BudgetAPI.Data;
 using BudgetAPI.Models;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BudgetAPI.Services
@@ -12,6 +11,11 @@ namespace BudgetAPI.Services
 		IQueryable<AccountsDTO> GetAccountTotals(int account, string reference);
 		IQueryable<AccountsSummary> GetAccountsSummary(string reference);
 		IQueryable<AccountsSummaryTotals> GetAccountsSummaryTotals(string reference);
+		Task<int> PutAccount(int id, Accounts account);
+		Task<int> PostAccount(Accounts account);
+		Task<int> DeleteAccount(Accounts account);
+		bool AccountExists(int id);
+		bool ValidarUsuario(int id);
 	}
 
 	public class AccountService : IAccountService
@@ -24,7 +28,6 @@ namespace BudgetAPI.Services
 		{
 			_context = context;
 			_user    = httpContextAccessor.HttpContext!.Items["User"] as Users ?? new Users();
-
 		}
 
 		public IQueryable<Accounts> GetAccount()
@@ -78,6 +81,39 @@ namespace BudgetAPI.Services
 			var accounts = _context.Accounts.Where(a => a.UserId == _user!.Id && a.Id == id);
 
 			return accounts;
+		}
+
+		public Task<int> PutAccount(int id, Accounts account)
+		{
+			_context.Entry(account).State = EntityState.Modified;
+
+			return _context.SaveChangesAsync();
+		}
+
+		public async Task<int> PostAccount(Accounts account)
+		{
+			account.UserId = _user.Id;
+
+			_context.Accounts.Add(account);
+
+			return await _context.SaveChangesAsync();
+		}
+
+		public async Task<int> DeleteAccount(Accounts account)
+		{
+			_context.Accounts.Remove(account);
+
+			return await _context.SaveChangesAsync();
+		}
+
+		public bool AccountExists(int id)
+		{
+			return _context.Accounts.Any(e => e.Id == id);
+		}
+
+		public bool ValidarUsuario(int id)
+		{
+			return id == _user.Id;
 		}
 	}
 }
