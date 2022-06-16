@@ -62,7 +62,7 @@ namespace BudgetAPI.Controllers
 		[HttpGet("People")]
 		public async Task<ActionResult<IEnumerable<CardsPostingsPeople>>> GetCardsPostingsPeople(int cardId, string reference)
 		{
-			var cardsPostingsPeople = await _context.GetCardsPostingsPeople(cardId, reference).ToListAsync();
+			var cardsPostingsPeople = await _context.GetCardsPostingsPeople(cardId, reference, 1).ToListAsync();
 
 			return cardsPostingsPeople;
 		}
