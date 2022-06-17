@@ -11,7 +11,7 @@ namespace BudgetAPI.Services
 		IQueryable<AccountsDTO> GetAccountTotals(int account, string reference);
 		IQueryable<AccountsSummary> GetAccountsSummary(string reference);
 		IQueryable<AccountsSummaryTotals> GetAccountsSummaryTotals(string reference);
-		Task<int> PutAccount(int id, Accounts account);
+		Task<int> PutAccount(Accounts account);
 		Task<int> PostAccount(Accounts account);
 		Task<int> DeleteAccount(Accounts account);
 		bool AccountExists(int id);
@@ -83,27 +83,27 @@ namespace BudgetAPI.Services
 			return accounts;
 		}
 
-		public Task<int> PutAccount(int id, Accounts account)
+		public Task<int> PutAccount(Accounts account)
 		{
 			_context.Entry(account).State = EntityState.Modified;
 
 			return _context.SaveChangesAsync();
 		}
 
-		public async Task<int> PostAccount(Accounts account)
+		public Task<int> PostAccount(Accounts account)
 		{
 			account.UserId = _user.Id;
 
 			_context.Accounts.Add(account);
 
-			return await _context.SaveChangesAsync();
+			return _context.SaveChangesAsync();
 		}
 
-		public async Task<int> DeleteAccount(Accounts account)
+		public Task<int> DeleteAccount(Accounts account)
 		{
 			_context.Accounts.Remove(account);
 
-			return await _context.SaveChangesAsync();
+			return _context.SaveChangesAsync();
 		}
 
 		public bool AccountExists(int id)

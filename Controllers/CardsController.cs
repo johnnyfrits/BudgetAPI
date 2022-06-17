@@ -1,35 +1,36 @@
-﻿using BudgetAPI.Data;
+﻿using BudgetAPI.Authorization;
+using BudgetAPI.Data;
 using BudgetAPI.Models;
+using BudgetAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BudgetAPI.Controllers
 {
+	[Authorize]
 	[Route("api/[controller]")]
 	[ApiController]
 	public class CardsController : ControllerBase
 	{
-		private readonly BudgetContext _context;
+		private readonly ICardService _cardService;
 
-		public CardsController(BudgetContext context)
+		public CardsController(ICardService cardService)
 		{
-			_context = context;
+			_cardService = cardService;
 		}
 
 		// GET: api/Card
 		[HttpGet]
-		public async Task<ActionResult<IEnumerable<CardsDTO>>> GetCard()
+		public async Task<ActionResult<IEnumerable<CardsDTO>>> GetCards()
 		{
-			return await _context.Cards.Include(u => u.User)
-									   .Select(c => CardToDTO(c))
-									   .ToListAsync();
+			return await _cardService.GetCards().ToListAsync();
 		}
 
 		// GET: api/Card/5
 		[HttpGet("{id}")]
-		public async Task<ActionResult<Cards>> GetCard(int id)
+		public async Task<ActionResult<Cards>> GetCards(int id)
 		{
-			var card = await _context.Cards.FindAsync(id);
+			var card = await _cardService.GetCards(id).FirstOrDefaultAsync();
 
 			if (card == null)
 			{
@@ -40,77 +41,63 @@ namespace BudgetAPI.Controllers
 		}
 
 		// PUT: api/Card/5
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPut("{id}")]
 		public async Task<IActionResult> PutCard(int id, Cards card)
 		{
-			if (id != card.Id)
+			if (id != card.Id || !_cardService.ValidarUsuario(card.UserId))
 			{
 				return BadRequest();
 			}
 
-			_context.Entry(card).State = EntityState.Modified;
-
 			try
 			{
-				await _context.SaveChangesAsync();
+				await _cardService.PutCard(id, card);
 			}
-			catch (DbUpdateConcurrencyException)
+			catch (DbUpdateConcurrencyException dex)
 			{
-				if (!CardExists(id))
+				if (!_cardService.CardExists(id))
 				{
 					return NotFound();
 				}
-				else
-				{
-					throw;
-				}
+
+				return Problem(dex.Message);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
 			}
 
-			return NoContent();
+			return Ok();
 		}
 
 		// POST: api/Card
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPost]
 		public async Task<ActionResult<Cards>> PostCard(Cards card)
 		{
-			_context.Cards.Add(card);
-			await _context.SaveChangesAsync();
+			await _cardService.PostCard(card);
 
-			return CreatedAtAction("GetCard", new { id = card.Id }, card);
+			return CreatedAtAction("GetCards", new { id = card.Id }, card);
 		}
 
 		// DELETE: api/Card/5
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteCard(int id)
 		{
-			var card = await _context.Cards.FindAsync(id);
+			Cards? card = await _cardService.GetCards(id).FirstOrDefaultAsync();
+
 			if (card == null)
 			{
 				return NotFound();
 			}
 
-			_context.Cards.Remove(card);
-			await _context.SaveChangesAsync();
+			if (!_cardService.ValidarUsuario(card.UserId))
+			{
+				return BadRequest();
+			}
 
-			return NoContent();
+			await _cardService.DeleteCard(card);
+
+			return Ok();
 		}
-
-		private bool CardExists(int id)
-		{
-			return _context.Cards.Any(e => e.Id == id);
-		}
-
-		private static CardsDTO CardToDTO(Cards card) => 
-			new CardsDTO {
-				Id         = card.Id,
-				UserId     = card.UserId,
-				Name       = card.Name,
-				Color      = card.Color,
-				Background = card.Background,
-				//User       = UsersControllerOld.UserToDTO(card.User),
-				Disabled   = card.Disabled
-			};
 	}
 }

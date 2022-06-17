@@ -59,21 +59,23 @@ namespace BudgetAPI.Controllers
 
 			try
 			{
-				await _accountPostingService.PutAccountsPostings(id, accountsPostings);
+				await _accountPostingService.PutAccountsPostings(accountsPostings);
 			}
-			catch (DbUpdateConcurrencyException e)
+			catch (DbUpdateConcurrencyException dex)
 			{
 				if (!_accountPostingService.AccountsPostingsExists(id))
 				{
 					return NotFound();
 				}
-				else
-				{
-					throw e;
-				}
+
+				return Problem(dex.Message);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
 			}
 
-			return NoContent();
+			return Ok();
 		}
 
 		// POST: api/AccountsPostings
@@ -101,9 +103,14 @@ namespace BudgetAPI.Controllers
 				return NotFound();
 			}
 
+			if (!_accountPostingService.ValidarUsuario(accountsPostings.Id))
+			{
+				return BadRequest();
+			}
+
 			await _accountPostingService.DeleteAccountsPostings(accountsPostings);
 
-			return NoContent();
+			return Ok();
 		}
 
 		[HttpPut("SetPositions")]

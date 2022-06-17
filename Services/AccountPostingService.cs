@@ -9,7 +9,7 @@ namespace BudgetAPI.Services
 		IQueryable<AccountsPostings> GetAccountsPostings();
 		IQueryable<AccountsPostings> GetAccountsPostings(int id);
 		IQueryable<AccountsPostings> GetAccountsPostings(int accountId, string reference);
-		Task<int> PutAccountsPostings(int id, AccountsPostings accountPosting);
+		Task<int> PutAccountsPostings(AccountsPostings accountPosting);
 		Task<int> PostAccountsPostings(AccountsPostings accountsPostings);
 		Task<int> DeleteAccountsPostings(AccountsPostings accountsPostings);
 		Task<int> SetPositions(List<AccountsPostings> accountsPostings);
@@ -30,22 +30,17 @@ namespace BudgetAPI.Services
 			_user    = httpContextAccessor.HttpContext!.Items["User"] as Users ?? new Users();
 		}
 
-		//private IQueryable<AccountsPostings> GetAccountsPostingsByUser()
-		//{
-		//	return _context.AccountsPostings.Include(a => a.Account)
-		//									.Where(a => a.Account.UserId == _user.Id);
-		//}
 		public IQueryable<AccountsPostings> GetAccountsPostings()
 		{
 			return _context.AccountsPostings.Include(a => a.Account)
-											.Where(a => a.Account.UserId == _user.Id)
+											.Where(a => a.Account!.UserId == _user.Id)
 											.OrderBy(a => a.Position);
 		}
 
 		public IQueryable<AccountsPostings> GetAccountsPostings(int id)
 		{
 			IQueryable<AccountsPostings>? accountsPostings = _context.AccountsPostings.Include(a => a.Account)
-																					  .Where(a => a.Id == id && a.Account.UserId == _user.Id);
+																					  .Where(a => a.Id == id && a.Account!.UserId == _user.Id);
 
 			return accountsPostings;
 		}
@@ -53,13 +48,13 @@ namespace BudgetAPI.Services
 		public IQueryable<AccountsPostings> GetAccountsPostings(int accountId, string reference)
 		{
 			IOrderedQueryable<AccountsPostings>? accountsPostings = _context.AccountsPostings.Include(a => a.Account)
-																							 .Where(a => a.AccountId == accountId && a.Reference == reference && a.Account.UserId == _user.Id)
+																							 .Where(a => a.AccountId == accountId && a.Reference == reference && a.Account!.UserId == _user.Id)
 																							 .OrderBy(a => a.Position); ;
 
 			return accountsPostings;
 		}
 
-		public Task<int> PutAccountsPostings(int id, AccountsPostings accountsPostings)
+		public Task<int> PutAccountsPostings(AccountsPostings accountsPostings)
 		{
 			_context.Entry(accountsPostings).State = EntityState.Modified;
 

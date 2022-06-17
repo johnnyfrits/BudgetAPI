@@ -1,5 +1,4 @@
 ﻿using BudgetAPI.Authorization;
-using BudgetAPI.Data;
 using BudgetAPI.Models;
 using BudgetAPI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -17,13 +16,6 @@ namespace BudgetAPI.Controllers
 		public AccountsController(IAccountService accountService)
 		{
 			_accountService = accountService;
-		}
-
-		// GET: api/Accounts
-		[HttpGet]
-		public async Task<ActionResult<IEnumerable<Accounts>>> GetAccount()
-		{
-			return await _accountService.GetAccount().ToListAsync();
 		}
 
 		[HttpGet("Totals")]
@@ -44,6 +36,14 @@ namespace BudgetAPI.Controllers
 			return await _accountService.GetAccountsSummaryTotals(reference).FirstOrDefaultAsync() ?? new AccountsSummaryTotals();
 		}
 
+		// GET: api/Accounts
+		[HttpGet]
+		public async Task<ActionResult<IEnumerable<Accounts>>> GetAccount()
+		{
+			return await _accountService.GetAccount().ToListAsync();
+		}
+
+		// GET: api/Accounts/5
 		[HttpGet("{id}")]
 		public async Task<ActionResult<Accounts>> GetAccount(int id)
 		{
@@ -68,21 +68,23 @@ namespace BudgetAPI.Controllers
 
 			try
 			{
-				await _accountService.PutAccount(id, account);
+				await _accountService.PutAccount(account);
 			}
-			catch (DbUpdateConcurrencyException e)
+			catch (DbUpdateConcurrencyException dex)
 			{
 				if (!_accountService.AccountExists(id))
 				{
 					return NotFound();
 				}
-				else
-				{
-					throw e;
-				}
+
+				return Problem(dex.Message);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
 			}
 
-			return NoContent();
+			return Ok();
 		}
 
 		// POST: api/Accounts
@@ -112,7 +114,7 @@ namespace BudgetAPI.Controllers
 
 			await _accountService.DeleteAccount(account);
 
-			return NoContent();
+			return Ok();
 		}
 	}
 }

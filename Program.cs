@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-int mode = 0;
+int mode = 1;
 
 //if (Debugger.IsAttached)
 //{
@@ -44,6 +44,9 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IAccountPostingService, AccountPostingService>();
 builder.Services.AddScoped<IBudgetService, BudgetService>();
+builder.Services.AddScoped<ICardService, CardService>();
+builder.Services.AddScoped<ICardPostingService, CardPostingService>();
+builder.Services.AddScoped<ICardReceiptService, CardReceiptService>();
 builder.Services.AddHttpContextAccessor();
 
 

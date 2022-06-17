@@ -1,81 +1,84 @@
-﻿using BudgetAPI.Data;
+﻿using BudgetAPI.Authorization;
 using BudgetAPI.Models;
+using BudgetAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BudgetAPI.Controllers
 {
+	[Authorize]
 	[Route("api/[controller]")]
 	[ApiController]
 	public class CardsReceiptsController : ControllerBase
 	{
-		private readonly BudgetContext _context;
+		private readonly ICardReceiptService _cardReceiptService;
 
-		public CardsReceiptsController(BudgetContext context)
+		public CardsReceiptsController(ICardReceiptService cardReceiptService)
 		{
-			_context = context;
+			_cardReceiptService = cardReceiptService;
 		}
 
 		// GET: api/CardsReceipts
 		[HttpGet]
 		public async Task<ActionResult<IEnumerable<CardsReceipts>>> GetCardsReceipts()
 		{
-			return await _context.CardsReceipts.ToListAsync();
+			return await _cardReceiptService.GetCardReceipts().ToListAsync();
 		}
 
 		// GET: api/CardsReceipts/5
 		[HttpGet("{id}")]
 		public async Task<ActionResult<CardsReceipts>> GetCardsReceipts(int id)
 		{
-			var cardsReceipts = await _context.CardsReceipts.FindAsync(id);
+			CardsReceipts? cardReceipt = await _cardReceiptService.GetCardReceipts(id).FirstOrDefaultAsync();
 
-			if (cardsReceipts == null)
+			if (cardReceipt == null)
 			{
 				return NotFound();
 			}
 
-			return cardsReceipts;
+			return cardReceipt;
 		}
 
 		// PUT: api/CardsReceipts/5
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPut("{id}")]
 		public async Task<IActionResult> PutCardsReceipts(int id, CardsReceipts cardsReceipts)
 		{
-			if (id != cardsReceipts.Id)
+			if (id != cardsReceipts.Id || !_cardReceiptService.ValidarUsuario(cardsReceipts.Id))
 			{
 				return BadRequest();
 			}
 
-			_context.Entry(cardsReceipts).State = EntityState.Modified;
-
 			try
 			{
-				await _context.SaveChangesAsync();
+				await _cardReceiptService.PutCardReceipt(cardsReceipts);
 			}
-			catch (DbUpdateConcurrencyException)
+			catch (DbUpdateConcurrencyException dex)
 			{
-				if (!CardsReceiptsExists(id))
+				if (!_cardReceiptService.CardReceiptExists(id))
 				{
 					return NotFound();
 				}
-				else
-				{
-					throw;
-				}
+
+				return Problem(dex.Message);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
 			}
 
-			return NoContent();
+			return Ok();
 		}
 
 		// POST: api/CardsReceipts
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPost]
 		public async Task<ActionResult<CardsReceipts>> PostCardsReceipts(CardsReceipts cardsReceipts)
 		{
-			_context.CardsReceipts.Add(cardsReceipts);
+			if (!_cardReceiptService.ValidateAccountAndUser(cardsReceipts.CardId))
+			{
+				return BadRequest();
+			}
 
-			await _context.SaveChangesAsync();
+			await _cardReceiptService.PostCardReceipt(cardsReceipts);
 
 			return CreatedAtAction("GetCardsReceipts", new { id = cardsReceipts.Id }, cardsReceipts);
 		}
@@ -84,21 +87,21 @@ namespace BudgetAPI.Controllers
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteCardsReceipts(int id)
 		{
-			var cardsReceipts = await _context.CardsReceipts.FindAsync(id);
-			if (cardsReceipts == null)
+			CardsReceipts? cardReceipt = await _cardReceiptService.GetCardReceipts(id).FirstOrDefaultAsync();
+
+			if (cardReceipt == null)
 			{
 				return NotFound();
 			}
 
-			_context.CardsReceipts.Remove(cardsReceipts);
-			await _context.SaveChangesAsync();
+			if (!_cardReceiptService.ValidarUsuario(cardReceipt.Id))
+			{
+				return BadRequest();
+			}
 
-			return NoContent();
-		}
+			await _cardReceiptService.DeleteCardReceipt(cardReceipt);
 
-		private bool CardsReceiptsExists(int id)
-		{
-			return _context.CardsReceipts.Any(e => e.Id == id);
+			return Ok();
 		}
 	}
 }
