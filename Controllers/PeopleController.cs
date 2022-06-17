@@ -73,6 +73,8 @@ namespace BudgetAPI.Controllers
 		[HttpPost]
 		public async Task<ActionResult<People>> PostPeople(People people)
 		{
+			people.UserId = 1;
+
 			_context.People.Add(people);
 			try
 			{

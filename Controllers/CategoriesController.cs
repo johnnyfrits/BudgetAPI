@@ -74,6 +74,8 @@ namespace BudgetAPI.Controllers
 		[HttpPost]
 		public async Task<ActionResult<Categories>> PostCategories(Categories categories)
 		{
+			categories.UserId = 1;
+
 			_context.Categories.Add(categories);
 			await _context.SaveChangesAsync();
 
