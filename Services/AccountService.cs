@@ -78,7 +78,7 @@ namespace BudgetAPI.Services
 
 		public IQueryable<Accounts> GetAccount(int id)
 		{
-			var accounts = _context.Accounts.Where(a => a.UserId == _user!.Id && a.Id == id);
+			var accounts = _context.Accounts.Where(a => a.UserId == _user.Id && a.Id == id);
 
 			return accounts;
 		}

@@ -1,33 +1,35 @@
-﻿using BudgetAPI.Data;
+﻿using BudgetAPI.Authorization;
 using BudgetAPI.Models;
+using BudgetAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BudgetAPI.Controllers
 {
+	[Authorize]
 	[Route("api/[controller]")]
 	[ApiController]
 	public class PeopleController : ControllerBase
 	{
-		private readonly BudgetContext _context;
+		private readonly IPeopleService _peopleService;
 
-		public PeopleController(BudgetContext context)
+		public PeopleController(IPeopleService peopleService)
 		{
-			_context = context;
+			_peopleService = peopleService;
 		}
 
 		// GET: api/People
 		[HttpGet]
 		public async Task<ActionResult<IEnumerable<People>>> GetPeople()
 		{
-			return await _context.People.ToListAsync();
+			return await _peopleService.GetPeople().ToListAsync();
 		}
 
 		// GET: api/People/5
 		[HttpGet("{id}")]
 		public async Task<ActionResult<People>> GetPeople(string id)
 		{
-			var people = await _context.People.FindAsync(id);
+			People? people = await _peopleService.GetPeople(id).FirstOrDefaultAsync();
 
 			if (people == null)
 			{
@@ -38,57 +40,40 @@ namespace BudgetAPI.Controllers
 		}
 
 		// PUT: api/People/5
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPut("{id}")]
 		public async Task<IActionResult> PutPeople(string id, People people)
 		{
-			if (id != people.Id)
+			if (!_peopleService.ValidarUsuario(people.UserId))
 			{
 				return BadRequest();
 			}
 
-			_context.Entry(people).State = EntityState.Modified;
-
 			try
 			{
-				await _context.SaveChangesAsync();
+				await _peopleService.PutPeople(id, people);
 			}
-			catch (DbUpdateConcurrencyException)
+			catch (DbUpdateConcurrencyException dex)
 			{
-				if (!PeopleExists(id))
+				if (!_peopleService.PeopleExists(id))
 				{
 					return NotFound();
 				}
-				else
-				{
-					throw;
-				}
+
+				return Problem(dex.Message);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
 			}
 
-			return NoContent();
+			return Ok();
 		}
 
 		// POST: api/People
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPost]
 		public async Task<ActionResult<People>> PostPeople(People people)
 		{
-			_context.People.Add(people);
-			try
-			{
-				await _context.SaveChangesAsync();
-			}
-			catch (DbUpdateException)
-			{
-				if (PeopleExists(people.Id))
-				{
-					return Conflict();
-				}
-				else
-				{
-					throw;
-				}
-			}
+			await _peopleService.PostPeople(people);
 
 			return CreatedAtAction("GetPeople", new { id = people.Id }, people);
 		}
@@ -97,21 +82,21 @@ namespace BudgetAPI.Controllers
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeletePeople(string id)
 		{
-			var people = await _context.People.FindAsync(id);
+			People? people = await _peopleService.GetPeople(id).FirstOrDefaultAsync();
+
 			if (people == null)
 			{
 				return NotFound();
 			}
 
-			_context.People.Remove(people);
-			await _context.SaveChangesAsync();
+			if (!_peopleService.ValidarUsuario(people.UserId))
+			{
+				return BadRequest();
+			}
 
-			return NoContent();
-		}
+			await _peopleService.DeletePeople(people);
 
-		private bool PeopleExists(string id)
-		{
-			return _context.People.Any(e => e.Id == id);
+			return Ok();
 		}
 	}
 }

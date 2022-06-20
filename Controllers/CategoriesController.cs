@@ -1,34 +1,35 @@
-﻿#nullable disable
-using BudgetAPI.Data;
+﻿using BudgetAPI.Authorization;
 using BudgetAPI.Models;
+using BudgetAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BudgetAPI.Controllers
 {
+	[Authorize]
 	[Route("api/[controller]")]
 	[ApiController]
 	public class CategoriesController : ControllerBase
 	{
-		private readonly BudgetContext _context;
+		private readonly ICategoryService _categoryService;
 
-		public CategoriesController(BudgetContext context)
+		public CategoriesController(ICategoryService categoryService)
 		{
-			_context = context;
+			_categoryService = categoryService;
 		}
 
 		// GET: api/Categories
 		[HttpGet]
 		public async Task<ActionResult<IEnumerable<Categories>>> GetCategories()
 		{
-			return await _context.Categories.ToListAsync();
+			return await _categoryService.GetCategories().ToListAsync();
 		}
 
 		// GET: api/Categories/5
 		[HttpGet("{id}")]
 		public async Task<ActionResult<Categories>> GetCategories(int id)
 		{
-			var categories = await _context.Categories.FindAsync(id);
+			Categories? categories = await _categoryService.GetCategories(id).FirstOrDefaultAsync();
 
 			if (categories == null)
 			{
@@ -39,66 +40,63 @@ namespace BudgetAPI.Controllers
 		}
 
 		// PUT: api/Categories/5
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPut("{id}")]
-		public async Task<IActionResult> PutCategories(int id, Categories categories)
+		public async Task<IActionResult> PutCategories(int id, Categories category)
 		{
-			if (id != categories.Id)
+			if (id != category.Id || !_categoryService.ValidarUsuario(category.UserId))
 			{
 				return BadRequest();
 			}
 
-			_context.Entry(categories).State = EntityState.Modified;
-
 			try
 			{
-				await _context.SaveChangesAsync();
+				await _categoryService.PutCategories(category);
 			}
-			catch (DbUpdateConcurrencyException)
+			catch (DbUpdateConcurrencyException dex)
 			{
-				if (!CategoriesExists(id))
+				if (!_categoryService.CategoriesExists(id))
 				{
 					return NotFound();
 				}
-				else
-				{
-					throw;
-				}
+
+				return Problem(dex.Message);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
 			}
 
-			return NoContent();
+			return Ok();
 		}
 
 		// POST: api/Categories
-		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPost]
-		public async Task<ActionResult<Categories>> PostCategories(Categories categories)
+		public async Task<ActionResult<Categories>> PostCategories(Categories category)
 		{
-			_context.Categories.Add(categories);
-			await _context.SaveChangesAsync();
+			await _categoryService.PostCategories(category);
 
-			return CreatedAtAction("GetCategories", new { id = categories.Id }, categories);
+			return CreatedAtAction("GetCategories", new { id = category.Id }, category);
 		}
 
 		// DELETE: api/Categories/5
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteCategories(int id)
 		{
-			var categories = await _context.Categories.FindAsync(id);
-			if (categories == null)
+			Categories? category = await _categoryService.GetCategories(id).FirstOrDefaultAsync();
+
+			if (category == null)
 			{
 				return NotFound();
 			}
 
-			_context.Categories.Remove(categories);
-			await _context.SaveChangesAsync();
+			if (!_categoryService.ValidarUsuario(category.UserId))
+			{
+				return BadRequest();
+			}
 
-			return NoContent();
-		}
+			await _categoryService.DeleteCategories(category);
 
-		private bool CategoriesExists(int id)
-		{
-			return _context.Categories.Any(e => e.Id == id);
+			return Ok();
 		}
 	}
 }

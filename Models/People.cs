@@ -4,5 +4,6 @@
 	{
 		public string Id { get; set; }
 		public string? Color { get; set; }
+		public int UserId { get; set; }
 	}
 }
