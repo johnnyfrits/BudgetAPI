@@ -48,6 +48,8 @@ builder.Services.AddScoped<ICardService, CardService>();
 builder.Services.AddScoped<ICardPostingService, CardPostingService>();
 builder.Services.AddScoped<ICardReceiptService, CardReceiptService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IExpenseService, ExpenseService>();
+builder.Services.AddScoped<IIncomeService, IncomeService>();
 builder.Services.AddScoped<IPeopleService, PeopleService>();
 builder.Services.AddHttpContextAccessor();
 

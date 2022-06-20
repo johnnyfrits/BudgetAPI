@@ -123,10 +123,10 @@ namespace BudgetAPI.Services
 
 		public Task<int> PostCardsPostings(CardsPostings cardPosting)
 		{
-			// ToDo => Acrescentar chave UserId
-			if (_context.People.FirstOrDefault(p => p.Id == cardPosting.PeopleId) != null)
+			// Se a pessoa já existe...
+			if (_context.People.FirstOrDefault(p => p.Id == cardPosting.PeopleId && p.UserId == _user.Id) != null)
 			{
-				cardPosting.People = null;
+				cardPosting.People = null; //...então remove para não tentar inserir
 			}
 
 			cardPosting.Position = (short)((_context.CardsPostings.Include(c => c.Card)
@@ -244,10 +244,12 @@ namespace BudgetAPI.Services
 
 			return cardsPostingsList;
 		}
+		
 		public bool ValidarUsuario(int cardPostingId)
 		{
 			return GetCardsPostings(cardPostingId).Any();
 		}
+
 		public bool ValidateCardAndUser(int cardId)
 		{
 			return _context.Cards.Where(c => c.Id == cardId && c.UserId == _user.Id).Any();
