@@ -9,9 +9,11 @@ namespace BudgetAPI.Services
 		UsersAuthenticateResponse Authenticate(UsersAuthenticateRequest model);
 		IEnumerable<Users> GetAll();
 		Users GetById(int id);
-		void Register(UsersRegisterRequest model);
+		void Register(UsersRegisterRequest newUser);
 		void Update(int id, UsersUpdateRequest model);
 		void Delete(int id);
+		bool UserExists(UsersRegisterRequest user);
+		bool UserExists(int id, UsersUpdateRequest currentUser);
 	}
 
 	public class UserService : IUserService
@@ -72,23 +74,18 @@ namespace BudgetAPI.Services
 			return GetUser(id);
 		}
 
-		public void Register(UsersRegisterRequest model)
+		public void Register(UsersRegisterRequest newUser)
 		{
-			// validate
-			if (_context.Users.Any(x => x.Login == model.Login))
-				//throw new AppException("Username '" + model.Username + "' is already taken");
-				throw new Exception("Usuário '" + model.Login + "' já cadastrado!");
-
-			// map model to new user object
-			//var user = _mapper.Map<User>(model);
+			// map newUser to new user object
+			//var user = _mapper.Map<User>(newUser);
 			var user = new Users
 			{
-				Name  = model.Name,
-				Login = model.Login
+				Name  = newUser.Name,
+				Login = newUser.Login
 			};
 
 			// hash password
-			user.Password = BCrypt.Net.BCrypt.HashPassword(model.Password);
+			user.Password = BCrypt.Net.BCrypt.HashPassword(newUser.Password);
 
 			// save user
 			_context.Users.Add(user);
@@ -96,22 +93,28 @@ namespace BudgetAPI.Services
 			_context.SaveChanges();
 		}
 
-		public void Update(int id, UsersUpdateRequest model)
+		public bool UserExists(UsersRegisterRequest user)
+		{
+			return _context.Users.Any(x => x.Login == user.Login);
+		}
+
+		public bool UserExists(int id, UsersUpdateRequest currentUser)
 		{
 			Users user = GetUser(id);
 
-			// validate
-			if (model.Login != user.Login && 
-				_context.Users.Any(x => x.Login == model.Login))
-				//throw new AppException("Username '" + model.Username + "' is already taken");
-				throw new Exception("Usuário '" + model.Login + "' já cadastrado!");
+			return currentUser.Login != user.Login && _context.Users.Any(x => x.Login == currentUser.Login);
+		}
+
+		public void Update(int id, UsersUpdateRequest model)
+		{
+			Users user = GetUser(id);
 
 			// hash password if it was entered
 			if (!string.IsNullOrEmpty(model.Password))
 				user.Password = BCrypt.Net.BCrypt.HashPassword(model.Password);
 
-			// copy model to user and save
-			//_mapper.Map(model, user);
+			// copy newUser to user and save
+			//_mapper.Map(newUser, user);
 			user.Name  = model.Name;
 			user.Login = model.Login;
 

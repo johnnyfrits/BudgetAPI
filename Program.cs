@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using BudgetAPI.Authorization;
 using BudgetAPI.Data;
 using BudgetAPI.Helpers;
@@ -8,12 +9,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-int mode = 1;
+int mode = 0;
 
-//if (Debugger.IsAttached)
-//{
-//	mode = 1;
-//}
+if (Debugger.IsAttached)
+{
+	mode = 1;
+}
 
 if (mode == 0)
 {

@@ -32,9 +32,14 @@ namespace BudgetAPI.Controllers
 
 		[AllowAnonymous]
 		[HttpPost("register")]
-		public IActionResult Register(UsersRegisterRequest model)
+		public IActionResult Register(UsersRegisterRequest newUser)
 		{
-			_userService.Register(model);
+			if (_userService.UserExists(newUser))
+			{
+				return Problem("Usuário já existe!");
+			}
+
+			_userService.Register(newUser);
 
 			return Ok(new { message = "Cadastro concluído!" });
 		}
@@ -56,9 +61,14 @@ namespace BudgetAPI.Controllers
 		}
 
 		[HttpPut("{id}")]
-		public IActionResult Update(int id, UsersUpdateRequest model)
+		public IActionResult Update(int id, UsersUpdateRequest currentUser)
 		{
-			_userService.Update(id, model);
+			if (_userService.UserExists(id, currentUser))
+			{
+				return Problem("Usuário já existe!");
+			}
+
+			_userService.Update(id, currentUser);
 
 			return Ok(new { message = "Usuário atualizado!" });
 		}
