@@ -97,6 +97,16 @@ namespace BudgetAPI.Services
 																	 i.Reference == reference &&
 																	 i.UserId == _user.Id);
 
+			cardsPostingPeople.AccountsPostings = _context.AccountsPostings.Include(ap => ap.Account)
+																		   .Include(ap => ap.Income)
+																		   .Include(ap => ap.CardReceipt)
+																		   .ThenInclude(cr => cr!.Card)
+																	       .Where(ap => ap.Account!.UserId == _user.Id &&
+																			  		    (ap.Income!.PeopleId == peopleId || 
+																						 ap.CardReceipt!.PeopleId == peopleId) &&
+																					    ap.Reference == reference
+																			     );
+
 			return cardsPostingPeople;
 		}
 
