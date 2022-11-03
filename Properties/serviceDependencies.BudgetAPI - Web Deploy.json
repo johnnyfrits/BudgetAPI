@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "apis1": {
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.ApiManagement/service/BudgetAPI2-apim/apis/budget",
-      "type": "apis.azure"
-    }
-  }
-}

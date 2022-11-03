@@ -78,7 +78,15 @@ namespace BudgetAPI.Controllers
 				return BadRequest();
 			}
 
-			await _cardReceiptService.PostCardReceipt(cardsReceipts);
+			try
+			{
+				await _cardReceiptService.PostCardReceipt(cardsReceipts);
+
+			}
+			catch (Exception ex )
+			{
+
+			}
 
 			return CreatedAtAction("GetCardsReceipts", new { id = cardsReceipts.Id }, cardsReceipts);
 		}

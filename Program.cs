@@ -11,10 +11,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 int mode = 0;
 
-if (Debugger.IsAttached)
-{
-	mode = 1;
-}
+//if (Debugger.IsAttached)
+//{
+//	mode = 1;
+//}
 
 if (mode == 0)
 {
