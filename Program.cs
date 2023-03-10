@@ -18,7 +18,8 @@ int mode = 0;
 
 if (mode == 0)
 {
-	builder.Services.AddDbContext<BudgetContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("AzureConnection")));
+	//builder.Services.AddDbContext<BudgetContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("AzureConnection")));
+	builder.Services.AddDbContext<BudgetContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("AWSConnection")));
 }
 else
 {

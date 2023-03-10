@@ -13,6 +13,10 @@
     },
     "apis1": {
       "type": "apis"
+    },
+    "mssql3": {
+      "type": "mssql",
+      "connectionId": "ConnectionStrings:AWSConnection"
     }
   }
 }
