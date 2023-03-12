@@ -7,16 +7,13 @@
       "type": "mssql",
       "connectionId": "ConnectionStrings:LocalConnection"
     },
-    "mssql1": {
-      "type": "mssql",
-      "connectionId": "ConnectionStrings:AzureConnection"
-    },
     "apis1": {
       "type": "apis"
     },
-    "mssql3": {
+    "mssql1": {
       "type": "mssql",
-      "connectionId": "ConnectionStrings:AWSConnection"
+      "connectionId": "ConnectionStrings:AzureConnection",
+      "dynamicId": null
     }
   }
 }

@@ -1,9 +1,10 @@
 {
   "dependencies": {
-    "mssql3": {
+    "mssql1": {
       "secretStore": "AzureAppSettings",
       "type": "mssql.onprem",
-      "connectionId": "ConnectionStrings:AWSConnection"
+      "connectionId": "ConnectionStrings:AzureConnection",
+      "dynamicId": null
     }
   }
 }
