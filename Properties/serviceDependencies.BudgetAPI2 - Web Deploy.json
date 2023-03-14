@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "mssql1": {
+      "secretStore": "AzureAppSettings",
+      "type": "mssql.onprem",
+      "connectionId": "ConnectionStrings:AzureConnection",
+      "dynamicId": null
+    },
+    "apis2": {
+      "apiEndpoint": "https://budgetapiapi.azure-api.net/",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.ApiManagement/service/BudgetAPIapi/apis/BudgetAPI",
+      "type": "apis.azure"
+    }
+  }
+}
