@@ -41,9 +41,9 @@ namespace BudgetAPI.Controllers
 		}
 
 		[HttpGet("{cardId}/{reference}")]
-		public async Task<ActionResult<IEnumerable<CardsPostings>>> GetCardsPostings(int cardId, string reference)
+		public async Task<ActionResult<IEnumerable<CardsPostingsDTO>>> GetCardsPostings(int cardId, string reference)
 		{
-			List<CardsPostings>? cardsPostings = await _cardPostingService.GetCardsPostings(cardId, reference).ToListAsync();
+			List<CardsPostingsDTO>? cardsPostings = await _cardPostingService.GetCardsPostings(cardId, reference).ToListAsync();
 
 			return cardsPostings;
 		}
