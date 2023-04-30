@@ -48,7 +48,7 @@ namespace BudgetAPI.Services
                                                Color           = c.Color,
                                                Background      = c.Background,
                                                Disabled        = c.Disabled,
-                                               ClosingDay      = c.ClosingDay,
+                                               //ClosingDay      = c.ClosingDay,
                                                CardInvoiceDate = cid != null ? new CardsInvoiceDate
                                                {
                                                    Id = cid.Id,
@@ -114,7 +114,7 @@ namespace BudgetAPI.Services
             Color      = card.Color,
             Background = card.Background,
             Disabled   = card.Disabled,
-            ClosingDay = card.ClosingDay
+            //ClosingDay = card.ClosingDay
         };
     }
 }

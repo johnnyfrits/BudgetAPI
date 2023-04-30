@@ -273,6 +273,7 @@ namespace BudgetAPI.Services
             CardsPostingsDTO cardPostingDTO = new()
             {
                 Id           = cardPosting.Id,
+                CardId       = cardPosting.CardId,
                 Date         = cardPosting.Date,
                 Reference    = cardPosting.Reference,
                 PeopleId     = cardPosting.PeopleId,
