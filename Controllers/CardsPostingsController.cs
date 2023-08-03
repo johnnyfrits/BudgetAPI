@@ -114,7 +114,7 @@ namespace BudgetAPI.Controllers
 		}
 
 		[HttpPut("AllParcels/{id}")]
-		public async Task<ActionResult<CardsPostings>> PutCardsPostingsWithParcels(int id, CardsPostings cardsPostings)
+		public async Task<ActionResult<CardsPostings>> PutCardsPostingsWithParcels(int id, CardsPostings cardsPostings, bool repeat, int qtyMonths)
 		{
 			try
 			{
@@ -125,7 +125,7 @@ namespace BudgetAPI.Controllers
 
 				await Task.Run(() =>
 				{
-					_cardPostingService.PutCardsPostingsWithParcels(cardsPostings);
+					_cardPostingService.PutCardsPostingsWithParcels(cardsPostings, repeat, qtyMonths);
 				});
 
 				return Ok();
@@ -158,7 +158,7 @@ namespace BudgetAPI.Controllers
 		}
 
 		[HttpPost("AllParcels")]
-		public async Task<ActionResult<CardsPostings>> PostCardsPostingsWithParcels(CardsPostings cardsPostings)
+		public async Task<ActionResult<CardsPostings>> PostCardsPostingsWithParcels(CardsPostings cardsPostings, bool repeat, int qtyMonths)
 		{
 			try
 			{
@@ -169,7 +169,7 @@ namespace BudgetAPI.Controllers
 
 				await Task.Run(() =>
 				{
-					_cardPostingService.PostCardsPostingsWithParcels(cardsPostings);
+					_cardPostingService.PostCardsPostingsWithParcels(cardsPostings, repeat, qtyMonths);
 				});
 
 				return await GetCardsPostings(cardsPostings.Id);

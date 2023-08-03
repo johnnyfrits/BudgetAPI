@@ -13,9 +13,9 @@ namespace BudgetAPI.Services
         IQueryable<CardsPostingsPeople> GetCardsPostingsPeople(int cardId, string reference);
         CardsPostingsPeople GetCardsPostingsByPeopleId(string? peopleId, string reference, int cardId);
         Task<int> PutCardsPostings(CardsPostings cardPosting);
-        void PutCardsPostingsWithParcels(CardsPostings cardsPostings);
+        void PutCardsPostingsWithParcels(CardsPostings cardsPostings, bool repeat, int qtyMonths);
         Task<int> PostCardsPostings(CardsPostings cardPosting);
-        void PostCardsPostingsWithParcels(CardsPostings cardsPostings);
+        void PostCardsPostingsWithParcels(CardsPostings cardsPostings, bool repeat, int qtyMonths);
         Task<int> DeleteCardsPostings(CardsPostings cardPosting);
         Task<int> SetPositions(List<CardsPostings> cardsPostings);
         bool ValidarUsuario(int cardPostingId);
@@ -120,11 +120,13 @@ namespace BudgetAPI.Services
             return _context.SaveChangesAsync();
         }
 
-        public void PutCardsPostingsWithParcels(CardsPostings cardsPostings)
+        public void PutCardsPostingsWithParcels(CardsPostings cardsPostings, bool repeat, int qtyMonths)
         {
             _context.Entry(cardsPostings).State = EntityState.Modified;
 
-            var cardsPostingsList = GenerateCardsPostings(cardsPostings);
+            var cardsPostingsList = repeat ?
+                                           RepeatCardsPostings(cardsPostings, qtyMonths) :
+                                           GenerateCardsPostings(cardsPostings);
 
             foreach (CardsPostings cp in cardsPostingsList.Skip(1))
             {
@@ -150,7 +152,7 @@ namespace BudgetAPI.Services
             return _context.SaveChangesAsync();
         }
 
-        public void PostCardsPostingsWithParcels(CardsPostings cardsPostings)
+        public void PostCardsPostingsWithParcels(CardsPostings cardsPostings, bool repeat, int qtyMonths)
         {
             List<CardsPostings>? cardsPostingsList = GenerateCardsPostings(cardsPostings);
 
@@ -292,6 +294,42 @@ namespace BudgetAPI.Services
             };
 
             return cardPostingDTO;
+        }
+
+        private List<CardsPostings> RepeatCardsPostings(CardsPostings cardPosting, int qtyMonths)
+        {
+            var cardPostingsList = new List<CardsPostings>();
+
+            string reference = cardPosting.Reference;
+
+            for (int i = 1; i <= (qtyMonths + 1); i++)
+            {
+                if (i >= cardPosting.ParcelNumber)
+                {
+                    var e = new CardsPostings
+                    {
+                        CardId       = cardPosting.CardId,
+                        Date         = cardPosting.Date,
+                        Reference    = reference,
+                        PeopleId     = cardPosting.PeopleId,
+                        Position     = cardPosting.Id > 0 && i == 1 ? cardPosting.Position : GetNewPosition(reference, cardPosting.CardId),
+                        Description  = cardPosting.Description,
+                        ParcelNumber = 1,
+                        Parcels      = cardPosting.Parcels,
+                        Amount       = cardPosting.Amount,
+                        TotalAmount  = cardPosting.TotalAmount,
+                        Others       = cardPosting.Others,
+                        Note         = cardPosting.Note,
+                        CategoryId   = cardPosting.CategoryId
+                    };
+
+                    cardPostingsList.Add(e);
+
+                    reference = GetNewReference(reference);
+                }
+            }
+
+            return cardPostingsList;
         }
     }
 }
