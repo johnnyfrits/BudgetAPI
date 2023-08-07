@@ -4,226 +4,236 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BudgetAPI.Services
 {
-	public interface IIncomeService
-	{
-		IQueryable<Incomes> GetIncomes();
-		IQueryable<Incomes> GetIncomes(int id);
-		IQueryable<IncomesDTO> GetIncomes(string reference);
-		IQueryable<IncomesDTO2> GetIncomesComboList(string reference);
-		Task<int> PutIncomes(Incomes incomes);
-		void PutIncomesWithParcels(Incomes incomes, int qtyMonths);
-		Task<int> SetPositions(List<Incomes> incomes);
-		Task<int> AddValue(Incomes income, decimal value);
-		Task<int> PostIncomes(Incomes income);
-		void PostIncomesWithParcels(Incomes incomes, int qtyMonths);
-		Task<int> DeleteIncomes(Incomes income);
-		bool IncomesExists(int id);
-		bool ValidarUsuario(int incomeId);
-	}
+    public interface IIncomeService
+    {
+        IQueryable<Incomes> GetIncomes();
+        IQueryable<Incomes> GetIncomes(int id);
+        IQueryable<IncomesDTO> GetIncomes(string reference);
+        IQueryable<IncomesDTO2> GetIncomesComboList(string reference);
+        Task<int> PutIncomes(Incomes incomes);
+        void PutIncomesWithParcels(Incomes incomes, int qtyMonths);
+        Task<int> SetPositions(List<Incomes> incomes);
+        Task<int> AddValue(Incomes income, decimal value);
+        Task<int> PostIncomes(Incomes income);
+        void PostIncomesWithParcels(Incomes incomes, int qtyMonths);
+        Task<int> DeleteIncomes(Incomes income);
+        bool IncomesExists(int id);
+        bool ValidarUsuario(int incomeId);
+    }
 
-	public class IncomeService : IIncomeService
-	{
-		private readonly BudgetContext _context;
+    public class IncomeService : IIncomeService
+    {
+        private readonly BudgetContext _context;
 
-		private readonly Users _user;
+        private readonly Users _user;
 
-		public IncomeService(BudgetContext context, IHttpContextAccessor httpContextAccessor)
-		{
-			_context = context;
-			_user    = httpContextAccessor.HttpContext!.Items["User"] as Users ?? new Users();
-		}
+        public IncomeService(BudgetContext context, IHttpContextAccessor httpContextAccessor)
+        {
+            _context = context;
+            _user    = httpContextAccessor.HttpContext!.Items["User"] as Users ?? new Users();
+        }
 
-		public IQueryable<Incomes> GetIncomes()
-		{
-			return _context.Incomes.OrderBy(e => e.Position);
-		}
+        public IQueryable<Incomes> GetIncomes()
+        {
+            return _context.Incomes.OrderBy(e => e.Position);
+        }
 
-		public IQueryable<Incomes> GetIncomes(int id)
-		{
-			IQueryable<Incomes>? incomes = _context.Incomes.Where(e => e.Id == id && e.UserId == _user.Id);
+        public IQueryable<Incomes> GetIncomes(int id)
+        {
+            IQueryable<Incomes>? incomes = _context.Incomes.Where(e => e.Id == id && e.UserId == _user.Id);
 
-			return incomes;
-		}
+            return incomes;
+        }
 
-		public IQueryable<IncomesDTO> GetIncomes(string reference)
-		{
-			IQueryable<IncomesDTO>? incomes = _context.Incomes.Where(e => e.Reference == reference && e.UserId == _user.Id)
-															  .OrderBy(e => e.Position)
-															  .Select(e => IncomesToDTO(e));
+        public IQueryable<IncomesDTO> GetIncomes(string reference)
+        {
+            IQueryable<IncomesDTO>? incomes = _context.Incomes.Where(e => e.Reference == reference && e.UserId == _user.Id)
+                                                              .OrderBy(e => e.Position)
+                                                              .Select(e => IncomesToDTO(e));
 
-			return incomes;
-		}
+            return incomes;
+        }
 
-		public IQueryable<IncomesDTO2> GetIncomesComboList(string reference)
-		{
-			IQueryable<IncomesDTO2>? incomes = _context.Incomes.Where(e => e.Reference == reference && e.UserId == _user.Id)
-																  .OrderBy(e => e.Position)
-																  .Select(e => IncomesToComboList(e));
+        public IQueryable<IncomesDTO2> GetIncomesComboList(string reference)
+        {
+            IQueryable<IncomesDTO2>? incomes = _context.Incomes.Where(e => e.Reference == reference && e.UserId == _user.Id)
+                                                                  .OrderBy(e => e.Position)
+                                                                  .Select(e => IncomesToComboList(e));
 
-			return incomes;
-		}
+            return incomes;
+        }
 
-		public Task<int> PutIncomes(Incomes income)
-		{
-			_context.Entry(income).State = EntityState.Modified;
+        public Task<int> PutIncomes(Incomes income)
+        {
+            _context.Entry(income).State = EntityState.Modified;
 
-			return _context.SaveChangesAsync();
-		}
+            return _context.SaveChangesAsync();
+        }
 
-		public void PutIncomesWithParcels(Incomes incomes, int qtyMonths)
-		{
-			_context.Entry(incomes).State = EntityState.Modified;
+        public void PutIncomesWithParcels(Incomes incomes, int qtyMonths)
+        {
+            _context.Entry(incomes).State = EntityState.Modified;
 
-			var incomesList = RepeatIncomes(incomes, qtyMonths);
+            var incomesList = RepeatIncomes(incomes, qtyMonths);
 
-			foreach (Incomes cp in incomesList.Skip(1))
-			{
-				_context.Incomes.Add(cp);
+            foreach (Incomes cp in incomesList.Skip(1))
+            {
+                _context.Incomes.Add(cp);
 
-				_context.SaveChanges();
-			}
-		}
+                _context.SaveChanges();
+            }
+        }
 
-		public Task<int> SetPositions(List<Incomes> incomes)
-		{
-			foreach (Incomes income in incomes)
-			{
-				_context.Entry(income).State = EntityState.Modified;
-			}
+        public Task<int> SetPositions(List<Incomes> incomes)
+        {
+            foreach (Incomes income in incomes)
+            {
+                _context.Entry(income).State = EntityState.Modified;
+            }
 
-			return _context.SaveChangesAsync();
-		}
+            return _context.SaveChangesAsync();
+        }
 
-		public Task<int> AddValue(Incomes income, decimal value)
-		{
-			income.ToReceive += value;
+        public Task<int> AddValue(Incomes income, decimal value)
+        {
+            income.ToReceive += value;
 
-			_context.Entry(income).State = EntityState.Modified;
+            _context.Entry(income).State = EntityState.Modified;
 
-			return _context.SaveChangesAsync();
-		}
+            return _context.SaveChangesAsync();
+        }
 
-		public Task<int> PostIncomes(Incomes income)
-		{
-			income.UserId = _user.Id;
+        public Task<int> PostIncomes(Incomes income)
+        {
+            income.UserId = _user.Id;
 
-			_context.Incomes.Add(income);
+            _context.Incomes.Add(income);
 
-			return _context.SaveChangesAsync();
-		}
+            return _context.SaveChangesAsync();
+        }
 
-		public void PostIncomesWithParcels(Incomes incomes, int qtyMonths)
-		{
-			var incomesList = RepeatIncomes(incomes, qtyMonths);
+        public void PostIncomesWithParcels(Incomes incomes, int qtyMonths)
+        {
+            var incomesList = RepeatIncomes(incomes, qtyMonths);
 
-			var i = 1;
+            Incomes? firstIncomes = null;
 
-			foreach (Incomes cp in incomesList)
-			{
-				cp.UserId = _user.Id;
+            foreach (Incomes cp in incomesList)
+            {
+                cp.UserId = _user.Id;
 
-				_context.Incomes.Add(cp);
+                // Set RelatedId for all except the first one
+                if (firstIncomes != null)
+                {
+                    cp.RelatedId = firstIncomes.Id;
+                }
 
-				_context.SaveChanges();
+                _context.Incomes.Add(cp);
+                _context.SaveChanges();
 
-				if (i++ == 1)
-				{
-					incomes.Id = cp.Id;
-				}
-			}
-		}
+                if (firstIncomes == null)
+                {
+                    firstIncomes = cp;
 
-		public Task<int> DeleteIncomes(Incomes income)
-		{
-			_context.Incomes.Remove(income);
+                    // Update the input object with the details of the first Incomes
+                    incomes.Id = firstIncomes.Id;
+                }
+            }
+        }
 
-			return _context.SaveChangesAsync();
-		}
 
-		public bool IncomesExists(int id)
-		{
-			return _context.Incomes.Any(e => e.Id == id && e.UserId == _user.Id);
-		}
+        public Task<int> DeleteIncomes(Incomes income)
+        {
+            _context.Incomes.Remove(income);
 
-		public bool ValidarUsuario(int incomeId)
-		{
-			return GetIncomes(incomeId).Any();
-		}
+            return _context.SaveChangesAsync();
+        }
 
-		private static string GetNewReference(string reference)
-		{
-			var year  = int.Parse(reference.Substring(0, 4));
-			var month = int.Parse(reference.Substring(4, 2));
+        public bool IncomesExists(int id)
+        {
+            return _context.Incomes.Any(e => e.Id == id && e.UserId == _user.Id);
+        }
 
-			var date = new DateTime(year, month, 1).AddMonths(1);
+        public bool ValidarUsuario(int incomeId)
+        {
+            return GetIncomes(incomeId).Any();
+        }
 
-			var newReference = date.ToString("yyyyMM");
+        private static string GetNewReference(string reference)
+        {
+            var year  = int.Parse(reference.Substring(0, 4));
+            var month = int.Parse(reference.Substring(4, 2));
 
-			return newReference;
-		}
+            var date = new DateTime(year, month, 1).AddMonths(1);
 
-		private short GetNewPosition(string reference)
-		{
-			var newPosition = _context.Incomes.Where(e => e.Reference == reference).Max(e => e.Position) ?? 0;
+            var newReference = date.ToString("yyyyMM");
 
-			return ++newPosition;
-		}
+            return newReference;
+        }
 
-		private List<Incomes> RepeatIncomes(Incomes income, int qtyMonths)
-		{
-			var incomesList = new List<Incomes>();
+        private short GetNewPosition(string reference)
+        {
+            var newPosition = _context.Incomes.Where(e => e.Reference == reference).Max(e => e.Position) ?? 0;
 
-			var reference = income.Reference;
+            return ++newPosition;
+        }
 
-			for (int i = 1; i <= (qtyMonths + 1); i++)
-			{
-				var e = new Incomes
-				{
-					UserId       = income.UserId,
-					Reference    = reference,
-					Position     = income.Id > 0 && i == 1 ? income.Position : GetNewPosition(reference),
-					Description  = income.Description,
-					ToReceive    = income.ToReceive,
-					Received     = income.Received,
-					Note         = income.Note,
-					CardId       = income.CardId,
-					AccountId    = income.AccountId,
-					Type         = income.Type,
-					PeopleId     = income.PeopleId
-				};
+        private List<Incomes> RepeatIncomes(Incomes income, int qtyMonths)
+        {
+            var incomesList = new List<Incomes>();
 
-				incomesList.Add(e);
+            var reference = income.Reference;
 
-				reference = GetNewReference(reference);
-			}
+            for (int i = 1; i <= (qtyMonths + 1); i++)
+            {
+                var e = new Incomes
+                {
+                    UserId       = income.UserId,
+                    Reference    = reference,
+                    Position     = income.Id > 0 && i == 1 ? income.Position : GetNewPosition(reference),
+                    Description  = income.Description,
+                    ToReceive    = income.ToReceive,
+                    Received     = income.Received,
+                    Note         = income.Note,
+                    CardId       = income.CardId,
+                    AccountId    = income.AccountId,
+                    Type         = income.Type,
+                    PeopleId     = income.PeopleId
+                };
 
-			return incomesList;
-		}
+                incomesList.Add(e);
 
-		private static IncomesDTO IncomesToDTO(Incomes income) =>
-			new IncomesDTO
-			{
-				Id          = income.Id,
-				UserId      = income.UserId,
-				Reference   = income.Reference,
-				Position    = income.Position,
-				Description = income.Description,
-				ToReceive   = income.ToReceive,
-				Received    = income.Received,
-				Remaining   = income.ToReceive - income.Received,
-				Note        = income.Note,
-				CardId      = income.CardId,
-				AccountId   = income.AccountId,
-				Type        = income.Type,
-				PeopleId    = income.PeopleId
-			};
+                reference = GetNewReference(reference);
+            }
 
-		private static IncomesDTO2 IncomesToComboList(Incomes income) =>
-		new()
-		{
-			Id          = income.Id,
-			Position    = income.Position,
-			Description = income.Description
-		};
-	}
+            return incomesList;
+        }
+
+        private static IncomesDTO IncomesToDTO(Incomes income) =>
+            new IncomesDTO
+            {
+                Id          = income.Id,
+                UserId      = income.UserId,
+                Reference   = income.Reference,
+                Position    = income.Position,
+                Description = income.Description,
+                ToReceive   = income.ToReceive,
+                Received    = income.Received,
+                Remaining   = income.ToReceive - income.Received,
+                Note        = income.Note,
+                CardId      = income.CardId,
+                AccountId   = income.AccountId,
+                Type        = income.Type,
+                PeopleId    = income.PeopleId,
+                RelatedId   = income.RelatedId
+            };
+
+        private static IncomesDTO2 IncomesToComboList(Incomes income) =>
+        new()
+        {
+            Id          = income.Id,
+            Position    = income.Position,
+            Description = income.Description
+        };
+    }
 }

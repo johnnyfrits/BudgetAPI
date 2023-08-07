@@ -19,5 +19,6 @@
         public People? People { get; set; }
         public Cards? Card { get; set; }
         public bool InTheCycle { get; set; }
+        public int? RelatedId { get; set; }
     }
 }

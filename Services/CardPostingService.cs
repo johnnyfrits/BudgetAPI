@@ -124,9 +124,9 @@ namespace BudgetAPI.Services
         {
             _context.Entry(cardsPostings).State = EntityState.Modified;
 
-            var cardsPostingsList = repeat ?
-                                           RepeatCardsPostings(cardsPostings, qtyMonths) :
-                                           GenerateCardsPostings(cardsPostings);
+            List<CardsPostings>? cardsPostingsList = repeat ?
+                                                     RepeatCardsPostings(cardsPostings, qtyMonths) :
+                                                     GenerateCardsPostings(cardsPostings);
 
             foreach (CardsPostings cp in cardsPostingsList.Skip(1))
             {
@@ -154,9 +154,11 @@ namespace BudgetAPI.Services
 
         public void PostCardsPostingsWithParcels(CardsPostings cardsPostings, bool repeat, int qtyMonths)
         {
-            List<CardsPostings>? cardsPostingsList = GenerateCardsPostings(cardsPostings);
+            List<CardsPostings>? cardsPostingsList = repeat ?
+                                                     RepeatCardsPostings(cardsPostings, qtyMonths) :
+                                                     GenerateCardsPostings(cardsPostings);
 
-            var i = 1;
+            CardsPostings? firstCardsPostings = null;
 
             foreach (CardsPostings cp in cardsPostingsList)
             {
@@ -164,20 +166,38 @@ namespace BudgetAPI.Services
 
                 _context.SaveChanges();
 
-                if (i++ == 1)
+                if (firstCardsPostings == null)
                 {
-                    cardsPostings.Id     = cp.Id;
-                    cardsPostings.Amount = cp.Amount;
+                    firstCardsPostings = cp;
+
+                    // Update the input object with the details of the first CardsPostings
+                    cardsPostings.Id     = firstCardsPostings.Id;
+                    cardsPostings.Amount = firstCardsPostings.Amount;
+                }
+                else
+                {
+                    cp.RelatedId = firstCardsPostings.Id;
+                    _context.SaveChanges();
                 }
             }
         }
 
-        public Task<int> DeleteCardsPostings(CardsPostings cardPosting)
+
+        public async Task<int> DeleteCardsPostings(CardsPostings cardPosting)
         {
+            // Find all the CardsPostings with the RelatedId equal to the Id of the cardPosting to be deleted
+            var relatedCardsPostings = _context.CardsPostings.Where(cp => cp.RelatedId == cardPosting.Id);
+
+            // Remove all found CardsPostings
+            _context.CardsPostings.RemoveRange(relatedCardsPostings);
+
+            // Remove the original cardPosting
             _context.CardsPostings.Remove(cardPosting);
 
-            return _context.SaveChangesAsync();
+            // Save changes and return the number of affected entries
+            return await _context.SaveChangesAsync();
         }
+
 
         public Task<int> SetPositions(List<CardsPostings> cardsPostings)
         {
@@ -218,43 +238,50 @@ namespace BudgetAPI.Services
         {
             var cardsPostingsList = new List<CardsPostings>();
 
-            var reference    = cardPosting.Reference;
-            var totalAmount  = cardPosting.TotalAmount ?? 0;
-            var parcels      = cardPosting.Parcels ?? 1;
-            var amountParcel = Math.Round(totalAmount / parcels, 2, MidpointRounding.AwayFromZero);
-            amountParcel    += (totalAmount - (amountParcel * parcels));
+            string? reference    = cardPosting.Reference;
+            decimal totalAmount  = cardPosting.TotalAmount ?? 0;
+            int parcels          = cardPosting.Parcels ?? 1;
+            decimal amountParcel = Math.Round(totalAmount / parcels, 2, MidpointRounding.AwayFromZero);
 
             for (int? i = 1; i <= cardPosting.Parcels; i++)
             {
-                if (i >= cardPosting.ParcelNumber)
+                // Calculate the difference between total amount and the sum of parcels
+                decimal difference = totalAmount - (amountParcel * parcels);
+
+                var cp = new CardsPostings
                 {
-                    var cp = new CardsPostings
-                    {
-                        CardId       = cardPosting.CardId,
-                        Date         = cardPosting.Date,
-                        Reference    = reference,
-                        PeopleId     = cardPosting.PeopleId,
-                        Position     = cardPosting.Id > 0 && i == 1 ? cardPosting.Position : GetNewPosition(reference, cardPosting.CardId),
-                        Description  = cardPosting.Description,
-                        ParcelNumber = i,
-                        Parcels      = cardPosting.Parcels,
-                        Amount       = amountParcel,
-                        TotalAmount  = cardPosting.TotalAmount,
-                        Others       = cardPosting.Others,
-                        Note         = cardPosting.Note,
-                        CategoryId   = cardPosting.CategoryId
-                    };
+                    CardId       = cardPosting.CardId,
+                    Date         = cardPosting.Date,
+                    Reference    = reference,
+                    PeopleId     = cardPosting.PeopleId,
+                    Position     = cardPosting.Id > 0 && i == 1 ? cardPosting.Position : GetNewPosition(reference, cardPosting.CardId),
+                    Description  = cardPosting.Description,
+                    ParcelNumber = i,
+                    Parcels      = cardPosting.Parcels,
+                    Amount       = amountParcel,
+                    TotalAmount  = cardPosting.TotalAmount,
+                    Others       = cardPosting.Others,
+                    Note         = cardPosting.Note,
+                    CategoryId   = cardPosting.CategoryId
+                };
 
-                    cardsPostingsList.Add(cp);
-
-                    reference = GetNewReference(reference);
+                // Add the difference to the first parcel
+                if (i == cardPosting.ParcelNumber && difference > 0)
+                {
+                    cp.Amount += difference;
                 }
+
+                cardsPostingsList.Add(cp);
+
+                reference = GetNewReference(reference);
+
+                // Substract the current amount from the total
+                totalAmount -= cp.Amount;
 
                 parcels -= parcels > 1 ? 1 : 0;
 
-                totalAmount   = totalAmount > amountParcel ? totalAmount - amountParcel : totalAmount;
-                amountParcel  = Math.Round(totalAmount / parcels, 2, MidpointRounding.AwayFromZero);
-                amountParcel += (totalAmount - (amountParcel * parcels));
+                // Recalculate the amount of each parcel
+                amountParcel = parcels > 1 ? Math.Round(totalAmount / parcels, 2, MidpointRounding.AwayFromZero) : totalAmount;
             }
 
             return cardsPostingsList;
@@ -290,7 +317,8 @@ namespace BudgetAPI.Services
                 CategoryId   = cardPosting.CategoryId,
                 People       = cardPosting.People,
                 Card         = cardPosting.Card,
-                InTheCycle   = invoiceDates != null && cardPosting.Date >= invoiceDates.InvoiceStart && cardPosting.Date <= invoiceDates.InvoiceEnd
+                InTheCycle   = invoiceDates != null && cardPosting.Date >= invoiceDates.InvoiceStart && cardPosting.Date <= invoiceDates.InvoiceEnd,
+                RelatedId    = cardPosting.RelatedId
             };
 
             return cardPostingDTO;
@@ -309,7 +337,7 @@ namespace BudgetAPI.Services
                     var e = new CardsPostings
                     {
                         CardId       = cardPosting.CardId,
-                        Date         = cardPosting.Date,
+                        Date         = i == 1 ? cardPosting.Date : cardPosting.Date.AddMonths(i - 1),
                         Reference    = reference,
                         PeopleId     = cardPosting.PeopleId,
                         Position     = cardPosting.Id > 0 && i == 1 ? cardPosting.Position : GetNewPosition(reference, cardPosting.CardId),
