@@ -4,116 +4,128 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BudgetAPI.Services
 {
-	public interface IAccountService
-	{
-		IQueryable<Accounts> GetAccount();
-		IQueryable<Accounts> GetAccount(int id);
-		IQueryable<AccountsDTO> GetAccountTotals(int account, string reference);
-		IQueryable<AccountsSummary> GetAccountsSummary(string reference);
-		IQueryable<AccountsSummaryTotals> GetAccountsSummaryTotals(string reference);
-		Task<int> PutAccount(Accounts account);
-		Task<int> PostAccount(Accounts account);
-		Task<int> DeleteAccount(Accounts account);
-		bool AccountExists(int id);
-		bool ValidarUsuario(int id);
-	}
+    public interface IAccountService
+    {
+        IQueryable<Accounts> GetAccount();
+        IQueryable<Accounts> GetAccount(int id);
+        IQueryable<AccountsDTO> GetAccountTotals(int account, string reference);
+        IQueryable<AccountsSummary> GetAccountsSummary(string reference);
+        IQueryable<AccountsSummaryTotals> GetAccountsSummaryTotals(string reference);
+        Task<int> PutAccount(Accounts account);
+        Task<int> PostAccount(Accounts account);
+        Task<int> SetPositions(List<Accounts> accounts);
 
-	public class AccountService : IAccountService
-	{
-		private readonly BudgetContext _context;
+        Task<int> DeleteAccount(Accounts account);
+        bool AccountExists(int id);
+        bool ValidarUsuario(int id);
+    }
 
-		private readonly Users _user;
+    public class AccountService : IAccountService
+    {
+        private readonly BudgetContext _context;
 
-		public AccountService(BudgetContext context, IHttpContextAccessor httpContextAccessor)
-		{
-			_context = context;
-			_user    = httpContextAccessor.HttpContext!.Items["User"] as Users ?? new Users();
-		}
+        private readonly Users _user;
 
-		public IQueryable<Accounts> GetAccount()
-		{
-			IQueryable<Accounts> query = _context.Accounts.Where(a => a.UserId == _user.Id);
+        public AccountService(BudgetContext context, IHttpContextAccessor httpContextAccessor)
+        {
+            _context = context;
+            _user    = httpContextAccessor.HttpContext!.Items["User"] as Users ?? new Users();
+        }
 
-			return query;
-		}
+        public IQueryable<Accounts> GetAccount()
+        {
+            IQueryable<Accounts> query = _context.Accounts.Where(a => a.UserId == _user.Id);
 
-		public IQueryable<AccountsDTO> GetAccountTotals(int accountId, string reference)
-		{
-			IQueryable<AccountsDTO> accountDto = Enumerable.Empty<AccountsDTO>().AsQueryable();
+            return query;
+        }
 
-			try
-			{
-				accountDto = _context.GetAccountTotals(accountId, reference, _user.Id);
-			}
-			catch { /**/ }
+        public IQueryable<AccountsDTO> GetAccountTotals(int accountId, string reference)
+        {
+            IQueryable<AccountsDTO> accountDto = Enumerable.Empty<AccountsDTO>().AsQueryable();
 
-			return accountDto;
-		}
+            try
+            {
+                accountDto = _context.GetAccountTotals(accountId, reference, _user.Id);
+            }
+            catch { /**/ }
 
-		public IQueryable<AccountsSummary> GetAccountsSummary(string reference)
-		{
-			IQueryable<AccountsSummary> query = Enumerable.Empty<AccountsSummary>().AsQueryable();
+            return accountDto;
+        }
 
-			try
-			{
-				query = _context.GetAccountsSummary(reference, _user.Id);
-			}
-			catch {/**/}
+        public IQueryable<AccountsSummary> GetAccountsSummary(string reference)
+        {
+            IQueryable<AccountsSummary> query = Enumerable.Empty<AccountsSummary>().AsQueryable();
 
-			return query;
-		}
+            try
+            {
+                query = _context.GetAccountsSummary(reference, _user.Id);
+            }
+            catch {/**/}
 
-		public IQueryable<AccountsSummaryTotals> GetAccountsSummaryTotals(string reference)
-		{
-			IQueryable<AccountsSummaryTotals> accountsSummaryTotals = Enumerable.Empty<AccountsSummaryTotals>().AsQueryable();
+            return query;
+        }
 
-			try
-			{
-				accountsSummaryTotals = _context.GetTotalsAccountsSummary(reference, _user.Id);
-			}
-			catch { /**/ }
+        public IQueryable<AccountsSummaryTotals> GetAccountsSummaryTotals(string reference)
+        {
+            IQueryable<AccountsSummaryTotals> accountsSummaryTotals = Enumerable.Empty<AccountsSummaryTotals>().AsQueryable();
 
-			return accountsSummaryTotals;
-		}
+            try
+            {
+                accountsSummaryTotals = _context.GetTotalsAccountsSummary(reference, _user.Id);
+            }
+            catch { /**/ }
 
-		public IQueryable<Accounts> GetAccount(int id)
-		{
-			var accounts = _context.Accounts.Where(a => a.UserId == _user.Id && a.Id == id);
+            return accountsSummaryTotals;
+        }
 
-			return accounts;
-		}
+        public IQueryable<Accounts> GetAccount(int id)
+        {
+            var accounts = _context.Accounts.Where(a => a.UserId == _user.Id && a.Id == id);
 
-		public Task<int> PutAccount(Accounts account)
-		{
-			_context.Entry(account).State = EntityState.Modified;
+            return accounts;
+        }
 
-			return _context.SaveChangesAsync();
-		}
+        public Task<int> PutAccount(Accounts account)
+        {
+            _context.Entry(account).State = EntityState.Modified;
 
-		public Task<int> PostAccount(Accounts account)
-		{
-			account.UserId = _user.Id;
+            return _context.SaveChangesAsync();
+        }
 
-			_context.Accounts.Add(account);
+        public Task<int> PostAccount(Accounts account)
+        {
+            account.UserId = _user.Id;
 
-			return _context.SaveChangesAsync();
-		}
+            _context.Accounts.Add(account);
 
-		public Task<int> DeleteAccount(Accounts account)
-		{
-			_context.Accounts.Remove(account);
+            return _context.SaveChangesAsync();
+        }
 
-			return _context.SaveChangesAsync();
-		}
+        public Task<int> DeleteAccount(Accounts account)
+        {
+            _context.Accounts.Remove(account);
 
-		public bool AccountExists(int id)
-		{
-			return _context.Accounts.Any(e => e.Id == id);
-		}
+            return _context.SaveChangesAsync();
+        }
 
-		public bool ValidarUsuario(int id)
-		{
-			return id == _user.Id;
-		}
-	}
+        public bool AccountExists(int id)
+        {
+            return _context.Accounts.Any(e => e.Id == id);
+        }
+
+        public bool ValidarUsuario(int id)
+        {
+            return id == _user.Id;
+        }
+
+        public Task<int> SetPositions(List<Accounts> accounts)
+        {
+            foreach (Accounts account in accounts)
+            {
+                _context.Entry(account).State = EntityState.Modified;
+            }
+
+            return _context.SaveChangesAsync();
+        }
+    }
 }
