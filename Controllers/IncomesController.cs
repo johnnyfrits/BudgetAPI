@@ -6,185 +6,193 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BudgetAPI.Controllers
 {
-	[Authorize]
-	[Route("api/[controller]")]
-	[ApiController]
-	public class IncomesController : ControllerBase
-	{
-		private readonly IIncomeService _incomeService;
+    [Authorize]
+    [Route("api/[controller]")]
+    [ApiController]
+    public class IncomesController : ControllerBase
+    {
+        private readonly IIncomeService _incomeService;
 
-		public IncomesController(IIncomeService incomeService)
-		{
-			_incomeService = incomeService;
-		}
+        public IncomesController(IIncomeService incomeService)
+        {
+            _incomeService = incomeService;
+        }
 
-		// GET: api/Incomes
-		[HttpGet]
-		public async Task<ActionResult<IEnumerable<Incomes>>> GetIncomes()
-		{
-			return await _incomeService.GetIncomes().ToListAsync();
-		}
+        // GET: api/Incomes
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Incomes>>> GetIncomes()
+        {
+            return await _incomeService.GetIncomes().ToListAsync();
+        }
 
-		// GET: api/Incomes/5
-		[HttpGet("{id}")]
-		public async Task<ActionResult<Incomes>> GetIncomes(int id)
-		{
-			Incomes? incomes = await _incomeService.GetIncomes(id).FirstOrDefaultAsync();
+        // GET: api/Incomes/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Incomes>> GetIncomes(int id)
+        {
+            Incomes? incomes = await _incomeService.GetIncomes(id).FirstOrDefaultAsync();
 
-			if (incomes == null)
-			{
-				return NotFound();
-			}
+            if (incomes == null)
+            {
+                return NotFound();
+            }
 
-			return incomes;
-		}
+            return incomes;
+        }
 
-		[HttpGet("reference/{reference}")]
-		public async Task<ActionResult<IEnumerable<IncomesDTO>>> GetIncomes(string reference)
-		{
-			List<IncomesDTO>? incomes = await _incomeService.GetIncomes(reference).ToListAsync();
+        [HttpGet("reference/{reference}")]
+        public async Task<ActionResult<IEnumerable<IncomesDTO>>> GetIncomes(string reference)
+        {
+            List<IncomesDTO>? incomes = await _incomeService.GetIncomes(reference).ToListAsync();
 
-			return incomes;
-		}
+            return incomes;
+        }
 
-		[HttpGet("combolist/{reference}")]
-		public async Task<ActionResult<IEnumerable<IncomesDTO2>>> GetIncomesComboList(string reference)
-		{
-			List<IncomesDTO2>? incomes = await _incomeService.GetIncomesComboList(reference).ToListAsync();
+        [HttpGet("reference2/{reference}")]
+        public async Task<ActionResult<IEnumerable<IncomesDTO>>> GetMyIncomes(string reference)
+        {
+            List<IncomesDTO>? incomes = await _incomeService.GetMyIncomes(reference).ToListAsync();
 
-			return incomes;
-		}
+            return incomes;
+        }
 
-		// PUT: api/Incomes/5
-		[HttpPut("{id}")]
-		public async Task<IActionResult> PutIncomes(int id, Incomes income)
-		{
-			if (id != income.Id || !_incomeService.ValidarUsuario(id))
-			{
-				return BadRequest();
-			}
+        [HttpGet("combolist/{reference}")]
+        public async Task<ActionResult<IEnumerable<IncomesDTO2>>> GetIncomesComboList(string reference)
+        {
+            List<IncomesDTO2>? incomes = await _incomeService.GetIncomesComboList(reference).ToListAsync();
 
-			try
-			{
-				await _incomeService.PutIncomes(income);
-			}
-			catch (DbUpdateConcurrencyException dex)
-			{
-				if (!_incomeService.IncomesExists(id))
-				{
-					return NotFound();
-				}
+            return incomes;
+        }
 
-				return Problem(dex.Message);
-			}
-			catch (Exception ex)
-			{
-				return Problem(ex.Message);
-			}
+        // PUT: api/Incomes/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutIncomes(int id, Incomes income)
+        {
+            if (id != income.Id || !_incomeService.ValidarUsuario(id))
+            {
+                return BadRequest();
+            }
 
-			return Ok();
-		}
+            try
+            {
+                await _incomeService.PutIncomes(income);
+            }
+            catch (DbUpdateConcurrencyException dex)
+            {
+                if (!_incomeService.IncomesExists(id))
+                {
+                    return NotFound();
+                }
 
-		[HttpPut("Repeat/{id}")]
-		public async Task<ActionResult<Incomes>> PutIncomesWithParcels(int id, Incomes income, int qtyMonths)
-		{
-			try
-			{
-				if (id != income.Id || !_incomeService.ValidarUsuario(id))
-				{
-					return BadRequest();
-				}
+                return Problem(dex.Message);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
 
-				await Task.Run(() =>
-				{
-					_incomeService.PutIncomesWithParcels(income, qtyMonths);
-				});
+            return Ok();
+        }
 
-				return Ok();
-			}
-			catch (Exception ex)
-			{
-				return Problem(ex.Message);
-			}
-		}
+        [HttpPut("Repeat/{id}")]
+        public async Task<ActionResult<Incomes>> PutIncomesWithParcels(int id, Incomes income, int qtyMonths)
+        {
+            try
+            {
+                if (id != income.Id || !_incomeService.ValidarUsuario(id))
+                {
+                    return BadRequest();
+                }
+
+                await Task.Run(() =>
+                {
+                    _incomeService.PutIncomesWithParcels(income, qtyMonths);
+                });
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
 
 
-		[HttpPut("AddValue/{id}")]
-		public async Task<ActionResult<Incomes>> AddValue(int id, decimal value)
-		{
-			var income = await _incomeService.GetIncomes(id).FirstOrDefaultAsync();
+        [HttpPut("AddValue/{id}")]
+        public async Task<ActionResult<Incomes>> AddValue(int id, decimal value)
+        {
+            var income = await _incomeService.GetIncomes(id).FirstOrDefaultAsync();
 
-			if (income == null)
-			{
-				return NotFound();
-			}
+            if (income == null)
+            {
+                return NotFound();
+            }
 
-			await _incomeService.AddValue(income, value);
+            await _incomeService.AddValue(income, value);
 
-			return Ok();
-		}
+            return Ok();
+        }
 
-		[HttpPut("SetPositions")]
-		public async Task<ActionResult<Incomes>> SetPositions(List<Incomes> incomes)
-		{
-			await _incomeService.SetPositions(incomes);
+        [HttpPut("SetPositions")]
+        public async Task<ActionResult<Incomes>> SetPositions(List<Incomes> incomes)
+        {
+            await _incomeService.SetPositions(incomes);
 
-			return Ok();
-		}
+            return Ok();
+        }
 
-		// POST: api/Incomes
-		[HttpPost]
-		public async Task<ActionResult<Incomes>> PostIncomes(Incomes income)
-		{
-			try
-			{
-				await _incomeService.PostIncomes(income);
+        // POST: api/Incomes
+        [HttpPost]
+        public async Task<ActionResult<Incomes>> PostIncomes(Incomes income)
+        {
+            try
+            {
+                await _incomeService.PostIncomes(income);
 
-				return await GetIncomes(income.Id);
-			}
-			catch (Exception ex)
-			{
-				return Problem(ex.ToString() + "\n\n" + ex.InnerException?.Message);
-			}
-		}
+                return await GetIncomes(income.Id);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString() + "\n\n" + ex.InnerException?.Message);
+            }
+        }
 
-		[HttpPost("Repeat")]
-		public async Task<ActionResult<Incomes>> PostIncomesWithParcels(Incomes income, int qtyMonths)
-		{
-			try
-			{
-				await Task.Run(() =>
-				{
-					_incomeService.PostIncomesWithParcels(income, qtyMonths);
-				});
+        [HttpPost("Repeat")]
+        public async Task<ActionResult<Incomes>> PostIncomesWithParcels(Incomes income, int qtyMonths)
+        {
+            try
+            {
+                await Task.Run(() =>
+                {
+                    _incomeService.PostIncomesWithParcels(income, qtyMonths);
+                });
 
-				return await GetIncomes(income.Id);
-			}
-			catch (Exception ex)
-			{
-				return Problem(ex.ToString() + "\n\n" + ex.InnerException?.Message);
-			}
-		}
+                return await GetIncomes(income.Id);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString() + "\n\n" + ex.InnerException?.Message);
+            }
+        }
 
-		// DELETE: api/Incomes/5
-		[HttpDelete("{id}")]
-		public async Task<IActionResult> DeleteIncomes(int id)
-		{
-			Incomes? income = await _incomeService.GetIncomes(id).FirstOrDefaultAsync();
+        // DELETE: api/Incomes/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteIncomes(int id)
+        {
+            Incomes? income = await _incomeService.GetIncomes(id).FirstOrDefaultAsync();
 
-			if (income == null)
-			{
-				return NotFound();
-			}
+            if (income == null)
+            {
+                return NotFound();
+            }
 
-			if (!_incomeService.ValidarUsuario(id))
-			{
-				return BadRequest();
-			}
+            if (!_incomeService.ValidarUsuario(id))
+            {
+                return BadRequest();
+            }
 
-			await _incomeService.DeleteIncomes(income);
+            await _incomeService.DeleteIncomes(income);
 
-			return Ok();
-		}
-	}
+            return Ok();
+        }
+    }
 }

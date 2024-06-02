@@ -9,6 +9,7 @@ namespace BudgetAPI.Services
         IQueryable<Incomes> GetIncomes();
         IQueryable<Incomes> GetIncomes(int id);
         IQueryable<IncomesDTO> GetIncomes(string reference);
+        IQueryable<IncomesDTO> GetMyIncomes(string reference);
         IQueryable<IncomesDTO2> GetIncomesComboList(string reference);
         Task<int> PutIncomes(Incomes incomes);
         void PutIncomesWithParcels(Incomes incomes, int qtyMonths);
@@ -48,6 +49,18 @@ namespace BudgetAPI.Services
         public IQueryable<IncomesDTO> GetIncomes(string reference)
         {
             IQueryable<IncomesDTO>? incomes = _context.Incomes.Where(e => e.Reference == reference && e.UserId == _user.Id)
+                                                              .OrderBy(e => e.Position)
+                                                              .Select(e => IncomesToDTO(e));
+
+            return incomes;
+        }
+
+        public IQueryable<IncomesDTO> GetMyIncomes(string reference)
+        {
+            IQueryable<IncomesDTO>? incomes = _context.Incomes.Where(e => e.Reference == reference && 
+                                                                                e.UserId == _user.Id && 
+                                                                                e.PeopleId == null && 
+                                                                                e.CardId == null)
                                                               .OrderBy(e => e.Position)
                                                               .Select(e => IncomesToDTO(e));
 
@@ -140,7 +153,6 @@ namespace BudgetAPI.Services
                 }
             }
         }
-
 
         public Task<int> DeleteIncomes(Incomes income)
         {
