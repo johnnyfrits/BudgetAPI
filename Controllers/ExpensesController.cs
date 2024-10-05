@@ -25,6 +25,19 @@ namespace BudgetAPI.Controllers
             return await _expenseService.GetExpenses().ToListAsync();
         }
 
+        [HttpGet("ByDescription/{description}")]
+        public async Task<ActionResult<Expenses>> ByDescription(string description)
+        {
+            Expenses? expense = await _expenseService.GetExpensesByDescription(description).FirstOrDefaultAsync();
+
+            if (expense == null)
+            {
+                return NotFound();
+            }
+
+            return expense;
+        }
+
         // GET: api/Expenses/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Expenses>> GetExpenses(int id)

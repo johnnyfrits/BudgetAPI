@@ -9,6 +9,7 @@ namespace BudgetAPI.Services
         IQueryable<CardsPostings> GetCardsPostings();
         IQueryable<CardsPostings> GetCardsPostings(int id);
         IQueryable<CardsPostingsDTO> GetCardsPostings(int cardId, string reference);
+        IQueryable<CardsPostings> GetCardsPostingsByDescription(string description);
         IQueryable<CardsPostings> GetCardsPostings(string peopleId, string reference);
         IQueryable<CardsPostingsPeople> GetCardsPostingsPeople(int cardId, string reference);
         CardsPostingsPeople GetCardsPostingsByPeopleId(string? peopleId, string reference, int cardId);
@@ -22,6 +23,7 @@ namespace BudgetAPI.Services
         bool CardsPostingsExists(int id);
 
         bool ValidateCardAndUser(int cardId);
+        int? GetCategory(string description);
     }
     public class CardPostingService : ICardPostingService
     {
@@ -47,6 +49,16 @@ namespace BudgetAPI.Services
             IQueryable<CardsPostings>? cardsPostings = _context.CardsPostings.Include(c => c.Card)
                                                                              .Include(c => c.People)
                                                                              .Where(c => c.Id == id && c.Card!.UserId == _user.Id);
+
+            return cardsPostings;
+        }
+
+        public IQueryable<CardsPostings> GetCardsPostingsByDescription(string description)
+        {
+            IQueryable<CardsPostings>? cardsPostings = _context.CardsPostings.Where(cp => cp.Card!.UserId == _user.Id &&
+                                                                            cp.CategoryId != null &&
+                                                                            cp.Description.ToLower() == description.ToLower())
+                                                                             .OrderByDescending(o => o.Id);
 
             return cardsPostings;
         }
@@ -358,6 +370,17 @@ namespace BudgetAPI.Services
             }
 
             return cardPostingsList;
+        }
+
+        public int? GetCategory(string description)
+        {
+            CardsPostings? cardPosting = _context.CardsPostings.Where(cp => cp.Card!.UserId == _user.Id &&
+                                                                            cp.CategoryId != null &&
+                                                                            cp.Description.ToLower() == description.ToLower())
+                                                               .FirstOrDefault();
+
+
+            return cardPosting != null ? cardPosting.CategoryId : null;
         }
     }
 }

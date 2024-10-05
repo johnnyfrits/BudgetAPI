@@ -1,5 +1,4 @@
 ﻿using BudgetAPI.Authorization;
-using BudgetAPI.Data;
 using BudgetAPI.Models;
 using BudgetAPI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -7,199 +6,212 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BudgetAPI.Controllers
 {
-	[Authorize]
-	[Route("api/[controller]")]
-	[ApiController]
-	public class CardsPostingsController : ControllerBase
-	{
-		private readonly ICardPostingService _cardPostingService;
+    [Authorize]
+    [Route("api/[controller]")]
+    [ApiController]
+    public class CardsPostingsController : ControllerBase
+    {
+        private readonly ICardPostingService _cardPostingService;
 
-		public CardsPostingsController(ICardPostingService cardPostingService)
-		{
-			_cardPostingService = cardPostingService;
-		}
+        public CardsPostingsController(ICardPostingService cardPostingService)
+        {
+            _cardPostingService = cardPostingService;
+        }
 
-		// GET: api/CardsPostings
-		[HttpGet]
-		public async Task<ActionResult<IEnumerable<CardsPostings>>> GetCardsPostings()
-		{
-			return await _cardPostingService.GetCardsPostings().ToListAsync();
-		}
+        // GET: api/CardsPostings
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<CardsPostings>>> GetCardsPostings()
+        {
+            return await _cardPostingService.GetCardsPostings().ToListAsync();
+        }
 
-		// GET: api/CardsPostings/5
-		[HttpGet("{id}")]
-		public async Task<ActionResult<CardsPostings>> GetCardsPostings(int id)
-		{
-			CardsPostings? cardsPostings = await _cardPostingService.GetCardsPostings(id).FirstOrDefaultAsync();
+        // GET: api/CardsPostings/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<CardsPostings>> GetCardsPostings(int id)
+        {
+            CardsPostings? cardsPostings = await _cardPostingService.GetCardsPostings(id).FirstOrDefaultAsync();
 
-			if (cardsPostings == null)
-			{
-				return NotFound();
-			}
+            if (cardsPostings == null)
+            {
+                return NotFound();
+            }
 
-			return cardsPostings;
-		}
+            return cardsPostings;
+        }
 
-		[HttpGet("{cardId}/{reference}")]
-		public async Task<ActionResult<IEnumerable<CardsPostingsDTO>>> GetCardsPostings(int cardId, string reference)
-		{
-			List<CardsPostingsDTO>? cardsPostings = await _cardPostingService.GetCardsPostings(cardId, reference).ToListAsync();
+        [HttpGet("ByDescription/{description}")]
+        public async Task<ActionResult<CardsPostings>> ByDescription(string description)
+        {
+            CardsPostings? cardsPostings = await _cardPostingService.GetCardsPostingsByDescription(description).FirstOrDefaultAsync();
 
-			return cardsPostings;
-		}
+            if (cardsPostings == null)
+            {
+                return NotFound();
+            }
 
-		[HttpGet("People/{peopleId}/{reference}")]
-		public async Task<ActionResult<IEnumerable<CardsPostings>>> GetCardsPostings(string peopleId, string reference)
-		{
-			List<CardsPostings>? cardsPostings = await _cardPostingService.GetCardsPostings(peopleId, reference).ToListAsync();
+            return cardsPostings;
+        }
 
-			return cardsPostings;
-		}
+        [HttpGet("{cardId}/{reference}")]
+        public async Task<ActionResult<IEnumerable<CardsPostingsDTO>>> GetCardsPostings(int cardId, string reference)
+        {
+            List<CardsPostingsDTO>? cardsPostings = await _cardPostingService.GetCardsPostings(cardId, reference).ToListAsync();
 
-		[HttpGet("People")]
-		public async Task<ActionResult<IEnumerable<CardsPostingsPeople>>> GetCardsPostingsPeople(int cardId, string reference)
-		{
-			List<CardsPostingsPeople>? cardsPostingsPeople = await _cardPostingService.GetCardsPostingsPeople(cardId, reference).ToListAsync();
+            return cardsPostings;
+        }
 
-			return cardsPostingsPeople;
-		}
+        [HttpGet("People/{peopleId}/{reference}")]
+        public async Task<ActionResult<IEnumerable<CardsPostings>>> GetCardsPostings(string peopleId, string reference)
+        {
+            List<CardsPostings>? cardsPostings = await _cardPostingService.GetCardsPostings(peopleId, reference).ToListAsync();
 
-		[HttpGet("PeopleById")]
-		public async Task<ActionResult<CardsPostingsPeople?>> GetCardsPostingsByPeopleIdAsync(string? peopleId, string reference, int cardId)
-		{
-			CardsPostingsPeople? cardsPostingPeople = await Task.Run(() =>
-			{
-				return _cardPostingService.GetCardsPostingsByPeopleId(peopleId, reference, cardId);
-			});
+            return cardsPostings;
+        }
 
-			return cardsPostingPeople;
-		}
+        [HttpGet("People")]
+        public async Task<ActionResult<IEnumerable<CardsPostingsPeople>>> GetCardsPostingsPeople(int cardId, string reference)
+        {
+            List<CardsPostingsPeople>? cardsPostingsPeople = await _cardPostingService.GetCardsPostingsPeople(cardId, reference).ToListAsync();
 
-		// PUT: api/CardsPostings/5
-		[HttpPut("{id}")]
-		public async Task<IActionResult> PutCardsPostings(int id, CardsPostings cardsPostings)
-		{
-			if (id != cardsPostings.Id || !_cardPostingService.ValidarUsuario(id))
-			{
-				return BadRequest();
-			}
+            return cardsPostingsPeople;
+        }
 
-			try
-			{
-				await _cardPostingService.PutCardsPostings(cardsPostings);
-			}
-			catch (DbUpdateConcurrencyException dex)
-			{
-				if (!_cardPostingService.CardsPostingsExists(id))
-				{
-					return NotFound();
-				}
+        [HttpGet("PeopleById")]
+        public async Task<ActionResult<CardsPostingsPeople?>> GetCardsPostingsByPeopleIdAsync(string? peopleId, string reference, int cardId)
+        {
+            CardsPostingsPeople? cardsPostingPeople = await Task.Run(() =>
+            {
+                return _cardPostingService.GetCardsPostingsByPeopleId(peopleId, reference, cardId);
+            });
 
-				return Problem(dex.Message);
-			}
-			catch (Exception ex)
-			{
-				return Problem(ex.Message);
-			}
+            return cardsPostingPeople;
+        }
 
-			return Ok();
-		}
+        // PUT: api/CardsPostings/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutCardsPostings(int id, CardsPostings cardsPostings)
+        {
+            if (id != cardsPostings.Id || !_cardPostingService.ValidarUsuario(id))
+            {
+                return BadRequest();
+            }
 
-		[HttpPut("SetPositions")]
-		public async Task<ActionResult<CardsPostings>> SetPositions(List<CardsPostings> cardsPostings)
-		{
-			await _cardPostingService.SetPositions(cardsPostings);
+            try
+            {
+                await _cardPostingService.PutCardsPostings(cardsPostings);
+            }
+            catch (DbUpdateConcurrencyException dex)
+            {
+                if (!_cardPostingService.CardsPostingsExists(id))
+                {
+                    return NotFound();
+                }
 
-			return Ok();
-		}
+                return Problem(dex.Message);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
 
-		[HttpPut("AllParcels/{id}")]
-		public async Task<ActionResult<CardsPostings>> PutCardsPostingsWithParcels(int id, CardsPostings cardsPostings, bool repeat, int qtyMonths)
-		{
-			try
-			{
-				if (id != cardsPostings.Id || !_cardPostingService.ValidarUsuario(id))
-				{
-					return BadRequest();
-				}
+            return Ok();
+        }
 
-				await Task.Run(() =>
-				{
-					_cardPostingService.PutCardsPostingsWithParcels(cardsPostings, repeat, qtyMonths);
-				});
+        [HttpPut("SetPositions")]
+        public async Task<ActionResult<CardsPostings>> SetPositions(List<CardsPostings> cardsPostings)
+        {
+            await _cardPostingService.SetPositions(cardsPostings);
 
-				return Ok();
-			}
-			catch (Exception ex)
-			{
-				return Problem(ex.Message);
-			}
-		}
+            return Ok();
+        }
 
-		// POST: api/CardsPostings
-		[HttpPost]
-		public async Task<ActionResult<CardsPostings>> PostCardsPostings(CardsPostings cardsPostings)
-		{
-			try
-			{
-				if (!_cardPostingService.ValidateCardAndUser(cardsPostings.CardId))
-				{
-					return BadRequest();
-				}
+        [HttpPut("AllParcels/{id}")]
+        public async Task<ActionResult<CardsPostings>> PutCardsPostingsWithParcels(int id, CardsPostings cardsPostings, bool repeat, int qtyMonths)
+        {
+            try
+            {
+                if (id != cardsPostings.Id || !_cardPostingService.ValidarUsuario(id))
+                {
+                    return BadRequest();
+                }
 
-				await _cardPostingService.PostCardsPostings(cardsPostings);
+                await Task.Run(() =>
+                {
+                    _cardPostingService.PutCardsPostingsWithParcels(cardsPostings, repeat, qtyMonths);
+                });
 
-				return await GetCardsPostings(cardsPostings.Id);
-			}
-			catch (Exception ex)
-			{
-				return Problem(ex.ToString() + "\n\n" + ex.InnerException?.Message);
-			}
-		}
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
 
-		[HttpPost("AllParcels")]
-		public async Task<ActionResult<CardsPostings>> PostCardsPostingsWithParcels(CardsPostings cardsPostings, bool repeat, int qtyMonths)
-		{
-			try
-			{
-				if (!_cardPostingService.ValidateCardAndUser(cardsPostings.CardId))
-				{
-					return BadRequest();
-				}
+        // POST: api/CardsPostings
+        [HttpPost]
+        public async Task<ActionResult<CardsPostings>> PostCardsPostings(CardsPostings cardsPostings)
+        {
+            try
+            {
+                if (!_cardPostingService.ValidateCardAndUser(cardsPostings.CardId))
+                {
+                    return BadRequest();
+                }
 
-				await Task.Run(() =>
-				{
-					_cardPostingService.PostCardsPostingsWithParcels(cardsPostings, repeat, qtyMonths);
-				});
+                await _cardPostingService.PostCardsPostings(cardsPostings);
 
-				return await GetCardsPostings(cardsPostings.Id);
+                return await GetCardsPostings(cardsPostings.Id);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.ToString() + "\n\n" + ex.InnerException?.Message);
+            }
+        }
 
-			}
-			catch (Exception ex)
-			{
-				return Problem(ex.Message);
-			}
-		}
+        [HttpPost("AllParcels")]
+        public async Task<ActionResult<CardsPostings>> PostCardsPostingsWithParcels(CardsPostings cardsPostings, bool repeat, int qtyMonths)
+        {
+            try
+            {
+                if (!_cardPostingService.ValidateCardAndUser(cardsPostings.CardId))
+                {
+                    return BadRequest();
+                }
 
-		// DELETE: api/CardsPostings/5
-		[HttpDelete("{id}")]
-		public async Task<IActionResult> DeleteCardsPostings(int id)
-		{
-			CardsPostings? cardPosting = await _cardPostingService.GetCardsPostings(id).FirstOrDefaultAsync();
+                await Task.Run(() =>
+                {
+                    _cardPostingService.PostCardsPostingsWithParcels(cardsPostings, repeat, qtyMonths);
+                });
 
-			if (cardPosting == null)
-			{
-				return NotFound();
-			}
+                return await GetCardsPostings(cardsPostings.Id);
 
-			if (!_cardPostingService.ValidarUsuario(cardPosting.Id))
-			{
-				return BadRequest();
-			}
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
 
-			await _cardPostingService.DeleteCardsPostings(cardPosting);
+        // DELETE: api/CardsPostings/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteCardsPostings(int id)
+        {
+            CardsPostings? cardPosting = await _cardPostingService.GetCardsPostings(id).FirstOrDefaultAsync();
 
-			return Ok();
-		}
-	}
+            if (cardPosting == null)
+            {
+                return NotFound();
+            }
+
+            if (!_cardPostingService.ValidarUsuario(cardPosting.Id))
+            {
+                return BadRequest();
+            }
+
+            await _cardPostingService.DeleteCardsPostings(cardPosting);
+
+            return Ok();
+        }
+    }
 }
