@@ -26,14 +26,9 @@ namespace BudgetAPI.Controllers
         }
 
         [HttpGet("ByDescription/{description}")]
-        public async Task<ActionResult<Expenses>> ByDescription(string description)
+        public async Task<Expenses?> ByDescription(string description)
         {
             Expenses? expense = await _expenseService.GetExpensesByDescription(description).FirstOrDefaultAsync();
-
-            if (expense == null)
-            {
-                return NotFound();
-            }
 
             return expense;
         }

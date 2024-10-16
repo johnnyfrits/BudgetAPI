@@ -53,7 +53,7 @@ namespace BudgetAPI.Services
         {
             IQueryable<Expenses>? expenses = _context.Expenses.Where(cp => cp.UserId == _user.Id &&
                                                                             cp.CategoryId != null &&
-                                                                            cp.Description.ToLower() == description.ToLower())
+                                                                            cp.Description.ToLower().Trim() == description.ToLower().Trim())
                                                                              .OrderByDescending(o => o.Id);
 
             return expenses;

@@ -57,7 +57,7 @@ namespace BudgetAPI.Services
         {
             IQueryable<CardsPostings>? cardsPostings = _context.CardsPostings.Where(cp => cp.Card!.UserId == _user.Id &&
                                                                             cp.CategoryId != null &&
-                                                                            cp.Description.ToLower() == description.ToLower())
+                                                                            cp.Description.ToLower().Trim() == description.ToLower().Trim())
                                                                              .OrderByDescending(o => o.Id);
 
             return cardsPostings;

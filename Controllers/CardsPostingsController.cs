@@ -27,27 +27,17 @@ namespace BudgetAPI.Controllers
 
         // GET: api/CardsPostings/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<CardsPostings>> GetCardsPostings(int id)
+        public async Task<CardsPostings?> GetCardsPostings(int id)
         {
             CardsPostings? cardsPostings = await _cardPostingService.GetCardsPostings(id).FirstOrDefaultAsync();
-
-            if (cardsPostings == null)
-            {
-                return NotFound();
-            }
 
             return cardsPostings;
         }
 
         [HttpGet("ByDescription/{description}")]
-        public async Task<ActionResult<CardsPostings>> ByDescription(string description)
+        public async Task<CardsPostings?> ByDescription(string description)
         {
             CardsPostings? cardsPostings = await _cardPostingService.GetCardsPostingsByDescription(description).FirstOrDefaultAsync();
-
-            if (cardsPostings == null)
-            {
-                return NotFound();
-            }
 
             return cardsPostings;
         }
